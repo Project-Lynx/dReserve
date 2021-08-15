@@ -1,8 +1,6 @@
-from app.repositories import events as events_repo
-
 from flask import Blueprint, jsonify, request
-from bs4 import BeautifulSoup as bs
-import requests as req
+
+from app.repositories import events as events_repo
 
 blueprint = Blueprint("events", __name__)
 

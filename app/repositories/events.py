@@ -6,7 +6,7 @@ def get_events(regions):
 
     connec = sqlite3.connect('app/data/econ_events.db')
     cursor = connec.cursor()
-    
+
     for region in regions:
         cursor.execute(f"SELECT * FROM events WHERE region='{region}'")
         data = cursor.fetchall()
