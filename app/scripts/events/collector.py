@@ -1,7 +1,7 @@
-from bs4 import BeautifulSoup as bs
-import requests as req
 import sqlite3
 
+import requests as req
+from bs4 import BeautifulSoup as bs
 
 payload = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36(KHTML, like Gecko) Chrome/56.0.2924.76 Safari/537.36',
@@ -25,26 +25,25 @@ expectation = []
 
 for row in data_rows:
     countrys = row.find_all("td", {'aria-label': "Country"})
-    
+
     for country in countrys:
-        if country.text == "JP":
-            region.append(country.text)
-            events = row.find_all("td", {'aria-label': "Event"})
-            
-            for event in events:
-                name.append((event.text).replace("*", ""))
-            event_times = row.find_all("td", {'aria-label': "Event Time"})
-            
-            for t in event_times:
-                time.append(t.text)
-            actual_ = row.find_all("td", {'aria-label': "Actual"})
-            
-            for x in actual_:
-                actual.append(x.text)
-            expecs = row.find_all("td", {'aria-label': "Market Expectation"})
-            
-            for expec in expecs:
-                expectation.append(expec.text)
+        region.append(country.text)
+        events = row.find_all("td", {'aria-label': "Event"})
+
+        for event in events:
+            name.append((event.text).replace("*", ""))
+        event_times = row.find_all("td", {'aria-label': "Event Time"})
+
+        for t in event_times:
+            time.append(t.text)
+        actual_ = row.find_all("td", {'aria-label': "Actual"})
+
+        for x in actual_:
+            actual.append(x.text)
+        expecs = row.find_all("td", {'aria-label': "Market Expectation"})
+
+        for expec in expecs:
+            expectation.append(expec.text)
 
 temp_list = []
 for idx in enumerate(name):
@@ -55,8 +54,8 @@ for idx in enumerate(name):
                        expectation text)""")
 
     temp_list.append((idx[1], region[idx[0]], time[idx[0]], actual[idx[0]], expectation[idx[0]]))
-    print("New Iter")
-    
-    cursor.executemany(f"INSERT INTO events VALUES (?,?,?,?,?)", temp_list)
+
+    cursor.executemany("INSERT INTO events VALUES (?,?,?,?,?)", temp_list)
     connec.commit()
+
     connec.close()
