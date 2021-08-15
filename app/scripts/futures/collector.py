@@ -19,7 +19,7 @@ def collection():
     ]
 
     while True:
-        time.sleep(900.0 - ((time.time() - start_time) % 900.0))
+        time.sleep(10.0 - ((time.time() - start_time) % 10.0))
         for x in symbols:
             connec = sqlite3.connect('app/data/market_data.db')
             cursor = connec.cursor()
