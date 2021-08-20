@@ -1,0 +1,7 @@
+RDS_HOST = " *REPLACE WITH YOUR RDS HOSTNAME* "
+RDS_PORT = 3306
+RDS_USER = ' *REPLACE WITH YOUR RDS USERNAME* '
+RDS_PWORD = ' *REPLACE WITH YOUR RDS PASSWORD* '
+
+WEB_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.50 Safari/537.36"
+WEB_BINARY_PATH = "/usr/bin/google-chrome-stable"
