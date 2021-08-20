@@ -1,7 +1,7 @@
-import sqlite3
-
 import requests as req
 from bs4 import BeautifulSoup as bs
+
+from app.models.events import Meta as events_model
 
 payload = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36(KHTML, like Gecko) Chrome/56.0.2924.76 Safari/537.36',
@@ -10,7 +10,6 @@ payload = {
 }
 
 url = "https://finance.yahoo.com/calendar/economic/"
-
 response = req.request("GET", url, headers=payload)
 parsed = bs(response.text, "lxml")
 
@@ -45,17 +44,11 @@ for row in data_rows:
         for expec in expecs:
             expectation.append(expec.text)
 
-temp_list = []
 for idx in enumerate(name):
-    connec = sqlite3.connect('app/data/econ_events.db')
-    cursor = connec.cursor()
-    cursor.execute("""CREATE TABLE IF NOT EXISTS events
-                       (name text, region text, time text, actual text,
-                       expectation text)""")
+    temp_list = []
+    model = events_model()
+    model.create_table()
 
     temp_list.append((idx[1], region[idx[0]], time[idx[0]], actual[idx[0]], expectation[idx[0]]))
-
-    cursor.executemany("INSERT INTO events VALUES (?,?,?,?,?)", temp_list)
-    connec.commit()
-
-    connec.close()
+    print(temp_list)
+    model.executemany("INSERT INTO event_table VALUES (%s,%s,%s,%s,%s)", temp_list)
