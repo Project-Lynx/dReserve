@@ -1,33 +1,47 @@
-import sqlite3
+from app.models.futures import Meta as futures_model
+from app.util import symbols_n_ids
 
 
 def get_hist(symbol):
-    hist_output = {}
+    PID = symbols_n_ids.get_CME_pids(symbol)
+    data = futures_model().fetch(f'''
+        SELECT updated, last FROM testing WHERE id={PID}
+    ''')
 
-    connec = sqlite3.connect('app/data/market_data.db')
-    cursor = connec.cursor()
-    cursor.execute(f"SELECT timestamp, price FROM {symbol.replace('=F','')}")
-    data = cursor.fetchall()
-
+    output = {}
     for key, value in data:
-        hist_output[key] = value
+        output[key[:8]] = value
 
-    return hist_output
+    return output
 
 
 def get_quotes(symbols):
-    quote_output = {}
+    if len(symbols) > 1:
+        PID = str(tuple(i for i in symbols_n_ids.get_CME_pids(symbols)))
+        data = futures_model().fetch(f'''
+            SELECT code, name, last, pChange, url FROM testing WHERE id IN {PID}
+        ''')
 
-    connec = sqlite3.connect('app/data/market_data.db')
-    cursor = connec.cursor()
-    for symbol in symbols:
-        cursor.execute(f"SELECT * FROM {symbol.replace('=F','')}")
-        data = cursor.fetchall()
-
+        output = {}
         for idx in enumerate(data):
-            quote_output[symbol] = {'name': idx[1][2]}
-            quote_output[symbol]["last"] = idx[1][3]
-            quote_output[symbol]["pchange"] = idx[1][4]
-            quote_output[symbol]["url"] = idx[1][5]
+            key = idx[1][0]
+            output[key] = [
+                idx[1][1], idx[1][2], idx[1][3], idx[1][4],
+            ]
 
-    return quote_output
+        return output
+
+    else:
+        PID = symbols_n_ids.get_CME_pids(symbols[0])
+        data = futures_model().fetch(f'''
+            SELECT code, name, last, pChange, url FROM testing WHERE id={PID}
+        ''')
+
+        output = {}
+        for idx in enumerate(data):
+            key = idx[1][0]
+            output[key] = [
+                idx[1][1], idx[1][2], idx[1][3], idx[1][4],
+            ]
+
+        return output
