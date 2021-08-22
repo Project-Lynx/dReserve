@@ -5,12 +5,15 @@ from app.util import symbols_n_ids
 def get_hist(symbol):
     PID = symbols_n_ids.get_CME_pids(symbol)
     data = futures_model().fetch(f'''
-        SELECT updated, last FROM testing WHERE id={PID}
+        SELECT code, updated, last FROM testing WHERE id={PID}
     ''')
 
     output = {}
-    for key, value in data:
-        output[key[:8]] = value
+    for key, subkey, value in data:
+        if output == {}:
+            output[key] = {}
+        else:
+            output[key][subkey[:8]] = value
 
     return output
 

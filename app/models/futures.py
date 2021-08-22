@@ -1,6 +1,7 @@
-from app.config import RDS_HOST, RDS_PORT, RDS_USER, RDS_PWORD
-
 import pymysql
+
+from app.config import RDS_HOST, RDS_PORT, RDS_PWORD, RDS_USER
+
 
 class Meta:
     def __init__(self):
@@ -9,20 +10,20 @@ class Meta:
         self.user = RDS_USER
         self.pword = RDS_PWORD
         self.db = 'futures'
-    
+
     def __connect__(self):
         self.connect = pymysql.connect(
-            host = self.host,
-            port = self.port,
-            user = self.user,
-            password = self.pword,
-            database = self.db,
+            host=self.host,
+            port=self.port,
+            user=self.user,
+            password=self.pword,
+            database=self.db,
         )
         self.cur = self.connect.cursor()
 
     def __disconnect__(self):
         self.connect.close()
-    
+
     def table_nuke(self):
         self.__connect__()
         query = "DROP TABLE testing"
@@ -30,17 +31,16 @@ class Meta:
         self.connect.commit()
         self.__disconnect__()
 
-
     def to_dict(self, PID=None):
         if PID is None:
             query = "SELECT * FROM testing"
         else:
             if isinstance(PID, list):
-                query = f"""
+                query = """
                     SELECT * FROM testing WHERE id IN %s""" % str(tuple(int(i) for i in PID))
             else:
                 query = f"SELECT * FROM testing WHERE id={PID}"
-        
+
         hashmap = {}
         self.__connect__()
         self.cur.execute(query)
@@ -55,7 +55,7 @@ class Meta:
                 if sub_key not in hashmap[key]:
                     hashmap[key][sub_key] = []
                     hashmap[key][sub_key].append({"pid": idx[1][0]})
-                    hashmap[key][sub_key].append({"price": idx[1][1]}) 
+                    hashmap[key][sub_key].append({"price": idx[1][1]})
                     hashmap[key][sub_key].append({"change": idx[1][2]})
                     hashmap[key][sub_key].append({"open": idx[1][3]})
                     hashmap[key][sub_key].append({"close": idx[1][4]})
@@ -77,9 +77,9 @@ class Meta:
         self.cur.execute(sql_query)
         result = self.cur.fetchall()
         self.__disconnect__()
-        
+
         return result
-    
+
     def execute(self, sql_query):
         self.__connect__()
         self.cur.execute(sql_query)
