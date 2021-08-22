@@ -8,7 +8,7 @@
             - You should already know the symbol
               of the product you want to add.
 
-        - ID is the products id 
+        - ID is the products id
             - ( Find on https://www.cmegroup.com )
             - Inspect element
             - Go to Network
