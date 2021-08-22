@@ -1,6 +1,7 @@
-from app.config import RDS_HOST, RDS_PORT, RDS_USER, RDS_PWORD
-
 import pymysql
+
+from app.config import RDS_HOST, RDS_PORT, RDS_PWORD, RDS_USER
+
 
 class Meta:
     def __init__(self):
@@ -12,21 +13,21 @@ class Meta:
 
     def __connect__(self):
         self.connect = pymysql.connect(
-            host = self.host,
-            port = self.port,
-            user = self.user,
-            password = self.pword,
-            database = self.db,
+            host=self.host,
+            port=self.port,
+            user=self.user,
+            password=self.pword,
+            database=self.db,
         )
         self.cur = self.connect.cursor()
 
     def __disconnect__(self):
         self.connect.close()
-    
+
     def create_table(self):
         self.__connect__()
         query = """CREATE TABLE IF NOT EXISTS event_table
-                (name varchar(255), region varchar(255), time varchar(255), 
+                (name varchar(255), region varchar(255), time varchar(255),
                 actual varchar(255), expectation varchar(255))
                 """
         self.cur.execute(query)
@@ -56,22 +57,20 @@ class Meta:
             query = "SELECT * FROM event_table"
         else:
             if isinstance(region, list):
-                _regions = str(tuple(i for i in region)) 
-                query = f"SELECT * FROM event_table WHERE region IN " + _regions 
+                _regions = str(tuple(i for i in region))
+                query = "SELECT * FROM event_table WHERE region IN " + _regions
             else:
                 query = f"SELECT * FROM event_table WHERE region='{region}'"
-        
+
         self.cur.execute(query)
         results = self.cur.fetchall()
 
         for idx in enumerate(results):
             key = idx[0] + 1
             hashmap[key] = [idx[1][0], idx[1][1], idx[1][2], idx[1][3], idx[1][4]]
-        
+
         return hashmap
 
-
-    
     def execute(self, sql_query):
         self.__connect__()
         self.cur.execute(sql_query)
