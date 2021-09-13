@@ -1,8 +1,9 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, request
 
 from app.repositories import yields as yields_repo
 
 blueprint = Blueprint("yields", __name__)
+
 
 @blueprint.route("/get-curve", methods=["POST"])
 def get_curve():
