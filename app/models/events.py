@@ -1,3 +1,5 @@
+from typing import Optional, Union
+
 import pymysql
 
 from app.config import RDS_HOST, RDS_PORT, RDS_PWORD, RDS_USER
@@ -41,7 +43,7 @@ class Meta:
         self.connect.commit()
         self.__disconnect__()
 
-    def fetch(self, sql_query):
+    def fetch(self, sql_query: str) -> tuple:
         self.__connect__()
         self.cur.execute(sql_query)
         result = self.cur.fetchall()
@@ -49,18 +51,28 @@ class Meta:
 
         return result
 
-    def to_dict(self, region=None):
-        hashmap = {}
+    def execute(self, sql_query: str):
         self.__connect__()
+        self.cur.execute(sql_query)
+        self.connect.commit()
+        self.__disconnect__()
 
-        if region is None:
-            query = "SELECT * FROM event_table"
-        else:
-            if isinstance(region, list):
-                _regions = str(tuple(i for i in region))
-                query = "SELECT * FROM event_table WHERE region IN " + _regions
-            else:
-                query = f"SELECT * FROM event_table WHERE region='{region}'"
+    def executemany(self, sql_query: str, data: list):
+        self.__connect__()
+        self.cur.executemany(sql_query, data)
+        self.connect.commit()
+        self.__disconnect__()
+
+    def to_dict(self, region: Optional[Union[list, str]]) -> dict:
+        self.__connect__()
+        hashmap: dict = {}
+
+        query = "SELECT * FROM event_table"
+        if isinstance(region, list):
+            _regions = str(tuple(i for i in region))
+            query = "SELECT * FROM event_table WHERE region IN " + _regions
+        elif isinstance(region, str):
+            query = f"SELECT * FROM event_table WHERE region='{region}'"
 
         self.cur.execute(query)
         results = self.cur.fetchall()
@@ -70,15 +82,3 @@ class Meta:
             hashmap[key] = [idx[1][0], idx[1][1], idx[1][2], idx[1][3], idx[1][4]]
 
         return hashmap
-
-    def execute(self, sql_query):
-        self.__connect__()
-        self.cur.execute(sql_query)
-        self.connect.commit()
-        self.__disconnect__()
-
-    def executemany(self, sql_query, data):
-        self.__connect__()
-        self.cur.executemany(sql_query, data)
-        self.connect.commit()
-        self.__disconnect__()
