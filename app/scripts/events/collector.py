@@ -50,5 +50,4 @@ for idx in enumerate(name):
     model.create_table()
 
     temp_list.append((idx[1], region[idx[0]], time[idx[0]], actual[idx[0]], expectation[idx[0]]))
-    print(temp_list)
     model.executemany("INSERT INTO event_table VALUES (%s,%s,%s,%s,%s)", temp_list)
