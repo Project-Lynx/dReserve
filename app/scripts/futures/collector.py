@@ -9,6 +9,8 @@ from app.data.CME_Futures import futures_map
 from app.models.futures import Meta
 from app.util import links
 
+Meta().table_nuke()
+
 
 def collection():
     sql = '''CREATE TABLE IF NOT EXISTS testing(
@@ -116,87 +118,96 @@ def collection():
             name = data.get('productName')
             url = data.get('uri')
 
+            if 'amp;' in name:
+                name = (name.replace('amp;', '')).replace('E-mini', '')
+            elif 'Henry Hub' in name:
+                name = (name.replace('Henry Hub ', '')).replace('Natural', 'Nat')
+            elif 'T-Note' in name:
+                name = name.replace('T-Note', 'T')
+            elif 'Eurodollar' in name:
+                name = name.replace('Eurodollar', 'Euro$')
+
             if PID == "1":
                 GE_cache.append(last_update)
                 if len(GE_cache) > 1:
                     if last_update == GE_cache[1]:
                         continue
-            if PID == "133":
+            elif PID == "133":
                 ES_cache.append(last_update)
                 if len(ES_cache) > 1:
                     if last_update == ES_cache[1]:
                         continue
-            if PID == "303":
+            elif PID == "303":
                 ZT_cache.append(last_update)
                 if len(ZT_cache) > 1:
                     if last_update == ZT_cache[1]:
                         continue
-            if PID == "329":
+            elif PID == "329":
                 ZF_cache.append(last_update)
                 if len(ZF_cache) > 1:
                     if last_update == ZF_cache[1]:
                         continue
-            if PID == "316":
+            elif PID == "316":
                 ZN_cache.append(last_update)
                 if len(ZN_cache) > 1:
                     if last_update == ZN_cache[1]:
                         continue
-            if PID == "7978":
+            elif PID == "7978":
                 TN_cache.append(last_update)
                 if len(TN_cache) > 1:
                     if last_update == TN_cache[1]:
                         continue
-            if PID == "307":
+            elif PID == "307":
                 ZB_cache.append(last_update)
                 if len(ZB_cache) > 1:
                     if last_update == ZB_cache[1]:
                         continue
-            if PID == "3141":
+            elif PID == "3141":
                 UB_cache.append(last_update)
                 if len(UB_cache) > 1:
                     if last_update == UB_cache[1]:
                         continue
-            if PID == "437":
+            elif PID == "437":
                 GC_cache.append(last_update)
                 if len(GC_cache) > 1:
                     if last_update == GC_cache[1]:
                         continue
-            if PID == "458":
+            elif PID == "458":
                 SI_cache.append(last_update)
                 if len(SI_cache) > 1:
                     if last_update == SI_cache[1]:
                         continue
-            if PID == "438":
+            elif PID == "438":
                 HG_cache.append(last_update)
                 if len(HG_cache) > 1:
                     if last_update == HG_cache[1]:
                         continue
-            if PID == "425":
+            elif PID == "425":
                 CL_cache.append(last_update)
                 if len(CL_cache) > 1:
                     if last_update == CL_cache[1]:
                         continue
-            if PID == "444":
+            elif PID == "444":
                 NG_cache.append(last_update)
                 if len(NG_cache) > 1:
                     if last_update == NG_cache[1]:
                         continue
-            if PID == "8478":
+            elif PID == "8478":
                 BTC_cache.append(last_update)
                 if len(BTC_cache) > 1:
                     if last_update == BTC_cache[1]:
                         continue
-            if PID == "58":
+            elif PID == "58":
                 sixE_cache.append(last_update)
                 if len(sixE_cache) > 1:
                     if last_update == sixE_cache[1]:
                         continue
-            if PID == "305":
+            elif PID == "305":
                 ZQ_cache.append(last_update)
                 if len(ZQ_cache) > 1:
                     if last_update == ZQ_cache[1]:
                         continue
-            if PID == "8462":
+            elif PID == "8462":
                 SR3_cache.append(last_update)
                 if len(SR3_cache) > 1:
                     if last_update == SR3_cache[1]:
