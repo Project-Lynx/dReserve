@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Union
+from typing import Optional, Union
 
 import pymysql
 
@@ -67,11 +67,11 @@ class Meta:
         elif product == 'JGB':
             query = """CREATE TABLE IF NOT EXISTS JGB_table
                        (date varchar(255) PRIMARY KEY,
+                       m1 varchar(255), m3 varchar(255), m6 varchar(255),
                        y1 varchar(255), y2 varchar(255), y3 varchar(255),
-                       y4 varchar(255), y5 varchar(255), y6 varchar(255),
-                       y7 varchar(255), y8 varchar(255), y9 varchar(255),
-                       y10 varchar(255), y15 varchar(255), y20 varchar(255),
-                       y25 varchar(255), y30 varchar(255), y40 varchar(255))
+                       y5 varchar(255), y7 varchar(255), y10 varchar(255),
+                       y15 varchar(255), y20 varchar(255), y30 varchar(255),
+                       y40 varchar(255))
                     """
         elif product == 'UKGB':
             query = """CREATE TABLE IF NOT EXISTS UKGB_table
@@ -87,7 +87,7 @@ class Meta:
         self.connect.commit()
         self.__disconnect__()
 
-    def to_dict(self, table: str, keys: Optional[Union[str, list]] = None) -> Dict:
+    def to_dict(self, table: str, keys: Optional[Union[str, list]] = None) -> dict:
         self.__connect__()
 
         hashmap: dict = {}
@@ -116,11 +116,11 @@ class Meta:
             for idx in enumerate(results):
                 key = idx[1][0]
                 hashmap[key] = {
-                    '1 year': idx[1][1], '2 year': idx[1][2], '3 year': idx[1][3],
-                    '4 year': idx[1][4], '5 year': idx[1][5], '6 year': idx[1][6],
-                    '7 year': idx[1][7], '8 year': idx[1][8], '9 year': idx[1][9],
-                    '10 year': idx[1][10], '15 year': idx[1][11], '20 year': idx[1][12],
-                    '25 year': idx[1][13], '30 year': idx[1][14], '40 year': idx[1][15],
+                    'month 1': idx[1][1], 'month 3': idx[1][2], 'month 6': idx[1][3],
+                    'year 1': idx[1][4], 'year 2': idx[1][5], 'year 3': idx[1][6],
+                    'year 5': idx[1][7], 'year 7': idx[1][8], 'year 10': idx[1][9],
+                    'year 15': idx[1][10], 'year 20': idx[1][11], 'year 30': idx[1][12],
+                    'year 40': idx[1][13],
                 }
         elif table == 'UKGB_table':
             for idx in enumerate(results):
