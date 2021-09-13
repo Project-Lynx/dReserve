@@ -47,7 +47,7 @@ class Meta:
         self.connect.commit()
         self.__disconnect__()
 
-    def executemany(self, sql_query: str, data: tuple):
+    def executemany(self, sql_query: str, data: list):
         self.__connect__()
         self.cur.executemany(sql_query, data)
         self.connect.commit()
