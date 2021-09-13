@@ -2,13 +2,13 @@ from app.models.futures import Meta as futures_model
 from app.util import symbols_n_ids
 
 
-def get_hist(symbol):
+def get_hist(symbol: str) -> dict:
     PID = symbols_n_ids.get_CME_pids(symbol)
     data = futures_model().fetch(f'''
         SELECT code, updated, last FROM testing WHERE id={PID}
     ''')
 
-    output = {}
+    output: dict = {}
     for key, subkey, value in data:
         if output == {}:
             output[key] = {}
@@ -18,14 +18,14 @@ def get_hist(symbol):
     return output
 
 
-def get_quotes(symbols):
+def get_quotes(symbols: str) -> dict:
     if len(symbols) > 1:
         PID = str(tuple(i for i in symbols_n_ids.get_CME_pids(symbols)))
         data = futures_model().fetch(f'''
             SELECT code, name, last, pChange, url FROM testing WHERE id IN {PID}
         ''')
 
-        output = {}
+        output: dict = {}
         for idx in enumerate(data):
             key = idx[1][0]
             output[key] = [
@@ -35,9 +35,9 @@ def get_quotes(symbols):
         return output
 
     else:
-        PID = symbols_n_ids.get_CME_pids(symbols[0])
+        _PID_ = symbols_n_ids.get_CME_pids(symbols[0])
         data = futures_model().fetch(f'''
-            SELECT code, name, last, pChange, url FROM testing WHERE id={PID}
+            SELECT code, name, last, pChange, url FROM testing WHERE id={_PID_}
         ''')
 
         output = {}
