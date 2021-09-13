@@ -3,7 +3,7 @@ def convert_shorthand_month(month: str) -> str:
              ERROR, check if month passed is a shorthand.
              Example: Jan, Feb, Mar, Apr, May, Jun, ..., Dec
              """
-    
+
     if month == 'Jan':
         output = '01'
     elif month == 'Feb':
@@ -30,4 +30,3 @@ def convert_shorthand_month(month: str) -> str:
         output = '12'
 
     return output
-
