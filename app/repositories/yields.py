@@ -4,13 +4,25 @@ from app.models.yields import Meta as yields_model
 from app.util import tables
 
 
-def get_curve(product: str, dates: Optional[Union[str, list]] = None) -> dict:
+def get_curve(product: str, mr: Optional[bool] = False,
+              dates: Optional[Union[str, list]] = None) -> dict:
+
     table = tables.get_table(product)
 
-    return yields_model().to_dict(table, dates)
+    if mr is True:
+        data = yields_model().to_dict(table, mr=True)
+    else:
+        if dates is not None:
+            data = yields_model().to_dict(table, keys=dates)
+        else:
+            data = yields_model().to_dict(table)
+
+    return data
 
 
-def get_rate(product: str, duration: str, dates: Optional[Union[str, list]] = None) -> dict:
+def get_rate(product: str, duration: str,
+             dates: Optional[Union[str, list]] = None) -> dict:
+
     hashmap: dict = {}
 
     table = tables.get_table(product)
