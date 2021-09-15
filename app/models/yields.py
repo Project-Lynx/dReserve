@@ -58,42 +58,47 @@ class Meta:
 
         if product == 'UST':
             query = """CREATE TABLE IF NOT EXISTS usT_table
-                       (date varchar(255) PRIMARY KEY,
-                       m1 varchar(255), m2 varchar(255), m3 varchar(255),
-                       m6 varchar(255), y1 varchar(255), y2 varchar(255),
-                       y3 varchar(255), y5 varchar(255), y7 varchar(255),
-                       y10 varchar(255), y20 varchar(255), y30 varchar(255))
+                       (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                       m1 varchar(10), m2 varchar(10), m3 varchar(10),
+                       m6 varchar(10), y1 varchar(10), y2 varchar(10),
+                       y3 varchar(10), y5 varchar(10), y7 varchar(10),
+                       y10 varchar(10), y20 varchar(10), y30 varchar(10),
+                       date DATE, year YEAR)
                     """
         elif product == 'JGB':
             query = """CREATE TABLE IF NOT EXISTS JGB_table
-                       (date varchar(255) PRIMARY KEY,
+                       (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                        m1 varchar(255), m3 varchar(255), m6 varchar(255),
                        y1 varchar(255), y2 varchar(255), y3 varchar(255),
                        y5 varchar(255), y7 varchar(255), y10 varchar(255),
                        y15 varchar(255), y20 varchar(255), y30 varchar(255),
-                       y40 varchar(255))
+                       y40 varchar(255), date DATE, year YEAR)
                     """
         elif product == 'UKGB':
             query = """CREATE TABLE IF NOT EXISTS UKGB_table
-                       (date varchar(255) PRIMARY KEY,
+                       (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                        m1 varchar(255), m3 varchar(255), m6 varchar(255),
                        y1 varchar(255), y2 varchar(255), y3 varchar(255),
                        y5 varchar(255), y7 varchar(255), y10 varchar(255),
                        y15 varchar(255), y20 varchar(255), y25 varchar(255),
-                       y30 varchar(255), y40 varchar(255))
+                       y30 varchar(255), y40 varchar(255), date DATE, year YEAR)
                     """
 
         self.cur.execute(query)
         self.connect.commit()
         self.__disconnect__()
 
-    def to_dict(self, table: str, keys: Optional[Union[str, list]] = None) -> dict:
-        self.__connect__()
+    def to_dict(self, table: str, mr: Optional[bool] = False,
+                keys: Optional[Union[str, list]] = None) -> dict:
 
+        self.__connect__()
         hashmap: dict = {}
         query = f"SELECT * FROM {table}"
 
-        if keys is not None:
+        if mr is True:
+            query = f"SELECT * FROM {table} ORDER BY id DESC LIMIT 1"
+
+        elif keys is not None:
             if isinstance(keys, str):
                 query = query + f" WHERE date='{keys}'"
             elif isinstance(keys, list):
@@ -105,16 +110,17 @@ class Meta:
 
         if table == 'usT_table':
             for idx in enumerate(results):
-                key = idx[1][0]
+                key = str(idx[1][-2])
                 hashmap[key] = {
                    '1 month': idx[1][1], '2 month': idx[1][2], '3 month': idx[1][3],
                    '6 month': idx[1][4], '1 year': idx[1][5], '2 Year': idx[1][6],
                    '3 year': idx[1][7], '5 year': idx[1][8], '7 year': idx[1][9],
                    '10 year': idx[1][10], '20 year': idx[1][11], '30 year': idx[1][12],
+                   'date': idx[1][13],
                 }
         elif table == 'JGB_table':
             for idx in enumerate(results):
-                key = idx[1][0]
+                key = str(idx[1][-2])
                 hashmap[key] = {
                     'month 1': idx[1][1], 'month 3': idx[1][2], 'month 6': idx[1][3],
                     'year 1': idx[1][4], 'year 2': idx[1][5], 'year 3': idx[1][6],
@@ -124,7 +130,7 @@ class Meta:
                 }
         elif table == 'UKGB_table':
             for idx in enumerate(results):
-                key = idx[1][0]
+                key = str(idx[1][-2])
                 hashmap[key] = {
                     'month 1': idx[1][1], 'month 3': idx[1][2], 'month 6': idx[1][3],
                     'year 1': idx[1][4], 'year 2': idx[1][5], 'year 3': idx[1][6],
