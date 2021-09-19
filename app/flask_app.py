@@ -5,6 +5,7 @@ from app.routes import events, futures, yields
 
 application = Flask(__name__)
 app = application
+app.config['JSON_SORT_KEYS'] = False
 CORS(app)
 
 app.register_blueprint(futures.blueprint)
