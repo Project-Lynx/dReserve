@@ -5,7 +5,7 @@ from app.repositories import events as events_repo
 blueprint = Blueprint("events", __name__)
 
 
-@blueprint.route("/get-econ-events", methods=["POST"])
+@blueprint.route("/events/get-econ-events", methods=["POST"])
 def get_econ_events():
     req_data = (request.data).decode("utf-8")
     req_data = list(req_data.split(","))

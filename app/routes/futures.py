@@ -5,7 +5,7 @@ from app.repositories import futures as futures_repo
 blueprint = Blueprint("futures", __name__)
 
 
-@blueprint.route("/get-hist", methods=["POST"])
+@blueprint.route("/futures/get-hist", methods=["POST"])
 def get_hist():
     req_data = (request.data).decode("utf-8")
     hist_data = futures_repo.get_hist(req_data)
@@ -13,7 +13,7 @@ def get_hist():
     return jsonify(hist_data), 200
 
 
-@blueprint.route("/get-quotes", methods=["POST"])
+@blueprint.route("/futures/get-quotes", methods=["POST"])
 def get_quotes():
     req_data = (request.data).decode("utf-8")
     symbols = list(req_data.split(","))

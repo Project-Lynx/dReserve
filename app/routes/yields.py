@@ -7,7 +7,7 @@ from app.repositories import yields as yields_repo
 blueprint = Blueprint("yields", __name__)
 
 
-@blueprint.route("/get-curve", methods=["POST"])
+@blueprint.route("/yields/get-curve", methods=["POST"])
 def get_curve() -> Union[str, dict]:
     req_data = (request.data).decode("utf-8")
 
@@ -25,14 +25,14 @@ def get_curve() -> Union[str, dict]:
 
     elif isinstance(req_data, str):
         if req_data == "":
-            return   """Empty POST request, send data as the following:
-                        Product,Date1(YYYY-MM-DD),...,Datex(YYYY-MM-DD)
-                     """
+            return """Empty POST request, send data as the following:
+                      Product,Date1(YYYY-MM-DD),...,Datex(YYYY-MM-DD)
+                   """
         else:
             return yields_repo.get_curve(req_data)
 
 
-@blueprint.route("/get-rate", methods=["POST"])
+@blueprint.route("/yields/get-rate", methods=["POST"])
 def get_rate() -> dict:
     req_data = (request.data).decode("UTF-8")
 
