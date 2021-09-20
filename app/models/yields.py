@@ -55,7 +55,6 @@ class Meta:
 
     def create_table(self, product: str):
         self.__connect__()
-
         if product == 'UST':
             query = """CREATE TABLE IF NOT EXISTS usT_table
                        (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -68,22 +67,21 @@ class Meta:
         elif product == 'JGB':
             query = """CREATE TABLE IF NOT EXISTS JGB_table
                        (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                       m1 varchar(255), m3 varchar(255), m6 varchar(255),
-                       y1 varchar(255), y2 varchar(255), y3 varchar(255),
-                       y5 varchar(255), y7 varchar(255), y10 varchar(255),
-                       y15 varchar(255), y20 varchar(255), y30 varchar(255),
-                       y40 varchar(255), date DATE, year YEAR)
+                       m1 varchar(10), m3 varchar(10), m6 varchar(10),
+                       y1 varchar(10), y2 varchar(10), y3 varchar(10),
+                       y5 varchar(10), y7 varchar(10), y10 varchar(10),
+                       y15 varchar(10), y20 varchar(10), y30 varchar(10),
+                       y40 varchar(10), date DATE, year YEAR)
                     """
         elif product == 'UKGB':
-            query = """CREATE TABLE IF NOT EXISTS UKGB_table
+            query = """CREATE TABLE IF NOT EXISTS ukGB_table
                        (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                       m1 varchar(255), m3 varchar(255), m6 varchar(255),
-                       y1 varchar(255), y2 varchar(255), y3 varchar(255),
-                       y5 varchar(255), y7 varchar(255), y10 varchar(255),
-                       y15 varchar(255), y20 varchar(255), y25 varchar(255),
-                       y30 varchar(255), y40 varchar(255), date DATE, year YEAR)
+                       m1 varchar(10), m3 varchar(10), m6 varchar(10),
+                       y1 varchar(10), y2 varchar(10), y3 varchar(10),
+                       y5 varchar(10), y7 varchar(10), y10 varchar(10),
+                       y15 varchar(10), y20 varchar(10), y25 varchar(10),
+                       y30 varchar(10), y40 varchar(10), date DATE, year YEAR)
                     """
-
         self.cur.execute(query)
         self.connect.commit()
         self.__disconnect__()
@@ -128,7 +126,7 @@ class Meta:
                     'year 15': idx[1][10], 'year 20': idx[1][11], 'year 30': idx[1][12],
                     'year 40': idx[1][13],
                 }
-        elif table == 'UKGB_table':
+        elif table == 'ukGB_table':
             for idx in enumerate(results):
                 key = str(idx[1][-2])
                 hashmap[key] = {
