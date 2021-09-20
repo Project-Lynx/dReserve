@@ -6,6 +6,6 @@ def get_table(product: str) -> str:
     elif product == "JGB":
         table = "JGB_table"
     elif product == "UKGB":
-        table = "UKGB_table"
+        table = "ukGB_table"
 
     return table
