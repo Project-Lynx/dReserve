@@ -1,32 +1,31 @@
 def convert_shorthand_month(month: str) -> str:
-    output = """
-             ERROR, check if month passed is a shorthand.
-             Example: Jan, Feb, Mar, Apr, May, Jun, ..., Dec
-             """
+    if not isinstance(month, str):
+        raise TypeError(f"{month} Not Valid! Should be a string like 'Jan' or 'Dec' ")
 
     if month == 'Jan':
-        output = '01'
+        return '01'
     elif month == 'Feb':
-        output = '02'
+        return '02'
     elif month == 'Mar':
-        output = '03'
+        return '03'
     elif month == 'Apr':
-        output = '04'
+        return '04'
     elif month == 'May':
-        output = '05'
+        return '05'
     elif month == 'Jun':
-        output = '06'
+        return '06'
     elif month == 'Jul':
-        output = '07'
+        return '07'
     elif month == 'Aug':
-        output = '08'
+        return '08'
     elif month == 'Sep':
-        output = '09'
+        return '09'
     elif month == 'Oct':
-        output = '10'
+        return '10'
     elif month == 'Nov':
-        output = '11'
+        return '11'
     elif month == 'Dec':
-        output = '12'
+        return '12'
 
-    return output
+    else:
+        raise ValueError(f"{month} Not Valid! Examples of valid passes: 'Jan'...'Dec'")
