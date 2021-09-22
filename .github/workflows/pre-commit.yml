@@ -11,9 +11,10 @@ jobs:
     steps:
     - name: Install dependencies
       run: |
+        deactivate
         python3 -m pip install --upgrade pip
-        python3 -m pip install types-PyMySQL
-        python3 -m pip install types-requests
+        pip3 install types-PyMySQL
+        pip3 install types-requests
         
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
