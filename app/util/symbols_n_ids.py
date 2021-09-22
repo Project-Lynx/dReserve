@@ -9,8 +9,4 @@ def get_CME_pids(symbols: Union[str, list]) -> Union[str, list]:
         return futures_map[symbols]
 
     if isinstance(symbols, list):
-        pids = []
-        for symbol in symbols:
-            pids.append(futures_map[symbol])
-
-        return pids
+        return [futures_map[symbol] for symbol in symbols]
