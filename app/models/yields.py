@@ -86,19 +86,19 @@ class Meta:
         self.connect.commit()
         self.__disconnect__()
 
-    def to_dict(self, table: str, mr: Optional[bool] = False,
-                keys: Optional[Union[str, list]] = None) -> dict:
+    def to_dict(self, table: str, keys: Optional[Union[str, list]] = None) -> dict:
 
         self.__connect__()
         hashmap: dict = {}
         query = f"SELECT * FROM {table}"
 
-        if mr is True:
-            query = f"SELECT * FROM {table} ORDER BY id DESC LIMIT 1"
-
-        elif keys is not None:
+        if keys is not None:
             if isinstance(keys, str):
-                query = query + f" WHERE date='{keys}'"
+                if keys == "MOST_RECENT":
+                    query = f"SELECT * FROM {table} ORDER BY id DESC LIMIT 1"
+                else:
+                    query = query + f" WHERE date='{keys}'"
+
             elif isinstance(keys, list):
                 keys = str(tuple(i for i in keys))
                 query = query + f" WHERE date IN {keys}"
