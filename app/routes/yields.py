@@ -1,17 +1,18 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify
 
-from app.repositories import yields as yields_repo
+from app.repositories.yields import curve, rate
 
 blueprint = Blueprint("yields", __name__)
 
 
-@blueprint.route("/yields/get-curve", methods=["POST"])
-def get_curve():
-    req_data = (request.data).decode("utf-8")
-    return jsonify(yields_repo.handle_get_curve(req_data)), 200
+@blueprint.route("/yields/get-curve/<product>/<dates>")
+def get_curve(product, dates):
+    req_data = [product, dates]
+    return jsonify(curve.handler(req_data)), 200
 
 
-@blueprint.route("/yields/get-rate", methods=["POST"])
-def get_rate():
-    req_data = (request.data).decode("UTF-8")
-    return jsonify(yields_repo.handle_get_rate(req_data)), 200
+@blueprint.route("/yields/get-rate/<product>/<duration>/", defaults={'dates': None})
+@blueprint.route("/yields/get-rate/<product>/<duration>/<dates>")
+def get_rate(product, duration, dates):
+    req_data = [product, duration, dates]
+    return jsonify(rate.handler(req_data)), 200

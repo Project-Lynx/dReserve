@@ -1,11 +1,11 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify
 
-from app.repositories import events as events_repo
+from app.repositories.events import events
 
 blueprint = Blueprint("events", __name__)
 
 
-@blueprint.route("/events/get-econ-events", methods=["POST"])
-def get_econ_events():
-    req_data = (request.data).decode("utf-8")
-    return jsonify(events_repo.get_events(req_data)), 200
+# Route to get events for specific region(s) (if multiple regions use ",")
+@blueprint.route("/events/get-econ-events/<regions>")
+def get_econ_events(regions):
+    return jsonify(events.handle_events(regions)), 200

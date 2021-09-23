@@ -1,17 +1,15 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify
 
-from app.repositories import futures as futures_repo
+from app.repositories.futures import hist, quote
 
 blueprint = Blueprint("futures", __name__)
 
 
-@blueprint.route("/futures/get-hist", methods=["POST"])
-def get_hist():
-    req_data = (request.data).decode("utf-8")
-    return jsonify(futures_repo.get_hist(req_data)), 200
+@blueprint.route("/futures/get-hist/<symbols>", methods=["GET"])
+def get_hist(symbols):
+    return jsonify(hist.handler(symbols)), 200
 
 
-@blueprint.route("/futures/get-quotes", methods=["POST"])
-def get_quotes():
-    req_data = (request.data).decode("utf-8")
-    return jsonify(futures_repo.get_quotes(req_data)), 200
+@blueprint.route("/futures/get-quote/<symbols>", methods=["GET"])
+def get_quotes(symbols):
+    return jsonify(quote.handler(symbols)), 200
