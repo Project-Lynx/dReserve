@@ -17,3 +17,6 @@ jobs:
         python3 -m pip install --upgrade pip
         pip3 install -r test_requirements.txt
     - uses: pre-commit/action@v2.0.3
+    - name: Running Tests
+      run: |
+        python3 -m unittest
