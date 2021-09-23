@@ -34,6 +34,7 @@ for i in target_data:
                 d_list = (i.text).splitlines()
                 for j in d_list:
                     if "%" in j:
+                        print(j[:-1])
                         _list_.append(j)
 _list_.append(date_final)
 _list_.append(year)
