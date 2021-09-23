@@ -59,11 +59,10 @@ def to_dict(results: tuple) -> dict:
 # Get query for single date
 def rate_query(product: str, duration: str, date: str) -> str:
     table = tables.get_table(product)
-    if date is not None:
-        if date == "MOST_RECENT":
-            return f"SELECT date, {duration} FROM {table} ORDER BY id DESC LIMIT 1"
-        else:
-            return f"SELECT date, {duration} FROM {table} WHERE date='{date}'"
+    if date == "MOST_RECENT":
+        return f"SELECT date, {duration} FROM {table} ORDER BY id DESC LIMIT 1"
+    else:
+        return f"SELECT date, {duration} FROM {table} WHERE date='{date}'"
 
 
 # Get query for multiple dates
