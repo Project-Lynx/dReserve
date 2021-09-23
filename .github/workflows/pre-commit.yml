@@ -9,12 +9,6 @@ jobs:
   pre-commit:
     runs-on: ubuntu-latest
     steps:
-    - name: Install dependencies
-      run: |
-        python3 -m pip install --upgrade pip
-        pip3 install types-PyMySQL
-        pip3 install types-requests
-        
     - uses: actions/checkout@v2
     - name: Install dependencies
       run: |
