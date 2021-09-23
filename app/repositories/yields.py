@@ -133,3 +133,5 @@ def handle_get_rate(payload: str) -> dict:
 
     except IndexError:
         raise ValueError("Incorrect payload! Should be like for example: \nJGB,M1 or UST,Y10,2008-09-15")
+    except pymysql.err.OperationalError:
+        raise ValueError("Incorrect payload! Make sure it includes a product, duration and or dates")
