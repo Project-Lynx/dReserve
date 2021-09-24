@@ -1,3 +1,4 @@
+import re
 from typing import Optional, Union
 
 import pymysql
@@ -36,6 +37,7 @@ class Meta:
 
     def table_nuke(self, table: str):
         self.__connect__()
+        self.validate_table(table)
         query = f"DROP TABLE {table}"
         self.cur.execute(query)
         self.connect.commit()
@@ -52,6 +54,11 @@ class Meta:
         self.cur.executemany(sql_query, data)
         self.connect.commit()
         self.__disconnect__()
+
+    def validate_table(self, table: str):
+        valid = re.compile(r'^[0-9a-zA-Z_\$]+$')
+        if not valid.match(table):
+            raise ValueError('No SQL injection for you!')
 
     def create_table(self, product: str):
         self.__connect__()
@@ -87,23 +94,28 @@ class Meta:
         self.__disconnect__()
 
     def to_dict(self, table: str, keys: Optional[Union[str, list]] = None) -> dict:
-
         self.__connect__()
         hashmap: dict = {}
-        query = f"SELECT * FROM {table}"
 
+        self.validate_table(table)
         if keys is not None:
             if isinstance(keys, str):
                 if keys == "MOST_RECENT":
                     query = f"SELECT * FROM {table} ORDER BY id DESC LIMIT 1"
+                    self.cur.execute(query)
                 else:
-                    query = query + f" WHERE date='{keys}'"
+                    query = f"SELECT * FROM {table} WHERE date=%s"
+                    self.cur.execute(query, (keys, ))
 
             elif isinstance(keys, list):
-                keys = str(tuple(i for i in keys))
-                query = query + f" WHERE date IN {keys}"
+                dates = tuple(i for i in keys)
+                query = f"SELECT * FROM {table} WHERE date IN %s"
+                self.cur.execute(query, (dates, ))
 
-        self.cur.execute(query)
+        else:
+            query = f"SELECT * FROM {table}"
+            self.cur.execute(query)
+
         results = self.cur.fetchall()
 
         if table == 'usT_table':
