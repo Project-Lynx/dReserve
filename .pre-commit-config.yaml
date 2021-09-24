@@ -22,9 +22,12 @@ repos:
         -   flake8-mutable>=1.2.0
         args: [--max-line-length=131]
 -   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v0.790
+    rev: v0.910
     hooks:
     -   id: mypy
+        verbose: true
+        args: [--ignore-missing-imports]
+
 -   repo: https://github.com/pycqa/isort
     rev: 5.8.0
     hooks:
