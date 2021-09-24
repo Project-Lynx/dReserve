@@ -4,10 +4,9 @@ from app.util import symbols_n_ids
 
 # Get history for single symbol
 def get_hist(symbol: str) -> dict:
-    PID = symbols_n_ids.get_CME_pids(symbol)
-    data = futures_model().fetch(f'''
-        SELECT code, updated, last FROM testing WHERE id={PID}
-    ''')
+    PID = str(symbols_n_ids.get_CME_pids(symbol))
+    query = "SELECT code, updated, last FROM testing WHERE id=%s"
+    data = futures_model().fetch(query, (PID, ))
 
     output: dict = {}
     for key, subkey, value in data:
@@ -22,10 +21,10 @@ def get_hist(symbol: str) -> dict:
 # Get history of multiple symbols
 def get_hists(symbol: str) -> dict:
     symbols = list(symbol.split(","))
-    PIDs = str(tuple(i for i in symbols_n_ids.get_CME_pids(symbols)))
-    data = futures_model().fetch(f'''
-        SELECT code, updated, last FROM testing WHERE id IN {PIDs}
-    ''')
+    PIDs = tuple(i for i in symbols_n_ids.get_CME_pids(symbols))
+    query_start = "SELECT code, updated, last FROM testing WHERE id IN ("
+    query = query_start + ("%s," * len(PIDs))[:-1] + ")"
+    data = futures_model().fetch(query, PIDs)
 
     output: dict = {}
     for key, subkey, value in data:

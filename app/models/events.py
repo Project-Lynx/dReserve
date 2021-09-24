@@ -1,5 +1,3 @@
-from typing import Optional, Union
-
 import pymysql
 
 from app.config import RDS_HOST, RDS_PORT, RDS_PWORD, RDS_USER
@@ -63,18 +61,14 @@ class Meta:
         self.connect.commit()
         self.__disconnect__()
 
-    def to_dict(self, region: Optional[Union[list, str]]) -> dict:
+    def to_dict(self, region: list) -> dict:
         self.__connect__()
         hashmap: dict = {}
 
-        query = "SELECT * FROM event_table"
-        if isinstance(region, list):
-            _regions = str(tuple(i for i in region))
-            query = "SELECT * FROM event_table WHERE region IN " + _regions
-        elif isinstance(region, str):
-            query = f"SELECT * FROM event_table WHERE region='{region}'"
-
-        self.cur.execute(query)
+        regions = tuple(i for i in region)
+        query_start = "SELECT * FROM event_table WHERE region IN ("
+        query = query_start + ("%s," * len(regions))[:-1] + ")"
+        self.cur.execute(query, regions)
         results = self.cur.fetchall()
 
         for idx in enumerate(results):

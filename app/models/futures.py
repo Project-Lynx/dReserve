@@ -33,9 +33,9 @@ class Meta:
         self.connect.commit()
         self.__disconnect__()
 
-    def fetch(self, sql_query: str) -> tuple:
+    def fetch(self, query: str, PID: tuple) -> tuple:
         self.__connect__()
-        self.cur.execute(sql_query)
+        self.cur.execute(query, PID)
         result = self.cur.fetchall()
         self.__disconnect__()
 
@@ -57,14 +57,14 @@ class Meta:
         self.__connect__()
         hashmap: dict = {}
 
-        query = "SELECT * FROM testing"
         if isinstance(PID, list):
-            query = """
-                SELECT * FROM testing WHERE id IN %s""" % str(tuple(int(i) for i in PID))
+            query_start = "SELECT * FROM testing WHERE id IN ("
+            query = query_start + ("%s," * len(PID))[:-1] + ")"
+            self.cur.execute(query, tuple(int(i) for i in PID))
         elif isinstance(PID, str):
-            query = f"SELECT * FROM testing WHERE id={PID}"
+            query = "SELECT * FROM testing WHERE id=%s"
+            self.cur.execute(query, (PID, ))
 
-        self.cur.execute(query)
         results = self.cur.fetchall()
 
         for idx in enumerate(results):
@@ -74,21 +74,15 @@ class Meta:
                 hashmap[key] = {}
             else:
                 if sub_key not in hashmap[key]:
-                    hashmap[key][sub_key] = []
-                    hashmap[key][sub_key].append({"pid": idx[1][0]})
-                    hashmap[key][sub_key].append({"price": idx[1][1]})
-                    hashmap[key][sub_key].append({"change": idx[1][2]})
-                    hashmap[key][sub_key].append({"open": idx[1][3]})
-                    hashmap[key][sub_key].append({"close": idx[1][4]})
-                    hashmap[key][sub_key].append({"high": idx[1][5]})
-                    hashmap[key][sub_key].append({"low": idx[1][6]})
-                    hashmap[key][sub_key].append({"highLimit": idx[1][7]})
-                    hashmap[key][sub_key].append({"lowLimit": idx[1][8]})
-                    hashmap[key][sub_key].append({"volume": idx[1][9]})
-                    hashmap[key][sub_key].append({"pChange": idx[1][12]})
-                    hashmap[key][sub_key].append({"expiration": idx[1][13]})
-                    hashmap[key][sub_key].append({"name": idx[1][14]})
-                    hashmap[key][sub_key].append({"url": idx[1][15]})
+                    hashmap[key][sub_key] = {
+                        "pid": idx[1][0], "price": idx[1][1],
+                        "change": idx[1][2], "open": idx[1][3],
+                        "close": idx[1][4], "high": idx[1][5],
+                        "low": idx[1][6], "highLimit": idx[1][7],
+                        "lowLimit": idx[1][8], "volume": idx[1][9],
+                        "pChange": idx[1][12], "expiration": idx[1][13],
+                        "name": idx[1][14], "url": idx[1][15],
+                    }
         self.__disconnect__()
 
         return hashmap
