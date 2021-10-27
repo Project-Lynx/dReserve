@@ -1,3 +1,4 @@
+"""
 import unittest
 
 from app.flask_app import app
@@ -23,3 +24,4 @@ class TestEventsRoutes(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+"""
