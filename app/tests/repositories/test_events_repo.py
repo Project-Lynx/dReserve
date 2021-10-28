@@ -1,3 +1,4 @@
+"""
 import unittest
 
 from app.repositories.events import events
@@ -19,3 +20,4 @@ class TestEventsRepo(unittest.TestCase):
 
 if __name__ in '__main__':
     unittest.main()
+"""
