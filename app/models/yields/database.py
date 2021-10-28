@@ -2,9 +2,8 @@ from app.models.database_meta import DB_Meta
 
 
 class Yields_DB(DB_Meta):
-    '''
-    Model for interacting with yields database.
-    '''
+    """Model for interacting with yields database."""
+
     def __init__(self) -> None:
         """Set up database variables."""
         super().__init__('yields')
