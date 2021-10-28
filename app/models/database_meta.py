@@ -4,7 +4,9 @@ from app.config import RDS_HOST, RDS_PORT, RDS_PWORD, RDS_USER
 
 
 class DB_Meta():
-    """Model for interacting with database."""
+    """
+    Model for interacting with database.
+    """
     def __init__(self, database: str) -> None:
         """Set up database variables."""
         self.host = RDS_HOST
