@@ -82,7 +82,7 @@ class multi_date(Dates_Strategy):
 
 class Context:
     def __init__(self, strategy: Dates_Strategy) -> None:
-        """Set up base case variables"""
+        """Set up base case variables."""
         self.strategy = strategy
         self.dates = strategy.get_internals()[0]
 
