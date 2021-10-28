@@ -4,32 +4,37 @@ from app.models.federal_reserve.database import DB_Model
 
 
 class Base_Case:
-    """Base Case Scenario"""
     def __init__(self) -> None:
+        """set up base case variables."""
         self.query_base = 'SELECT date, statement FROM fomc_statements'
         self.db_model = DB_Model()
 
 
 class No_Dates_Strategy(Base_Case):
     def __init__(self) -> None:
+        """set up base case variables."""
         super().__init__()
 
     def execute(self) -> dict:
+        """execute strategy."""
         query = [self.query_base, False]
         return self.db_model.to_dict(query)
 
 
 class Dates_Strategy(Base_Case):
     def __init__(self, dates: list) -> None:
+        """set up base case variables."""
         super().__init__()
         self.dates = dates
         self.current_query = f'{self.query_base} ORDER BY id ASC LIMIT 1'
         self.previous_query = f'{self.query_base} ORDER BY id ASC LIMIT 1, 1'
 
     def get_internals(self) -> list:
+        """export internal variables."""
         return [self.dates]
 
     def execute(self, query: list[Union[str, bool]]) -> dict:
+        """execute strategy."""
         if query[1] is True:
             return self.db_model.to_dict(query, self.dates)
         else:
@@ -38,24 +43,26 @@ class Dates_Strategy(Base_Case):
 
 class a_date(Dates_Strategy):
     def __init__(self, dates: list) -> None:
+        """set up base case variables."""
         super().__init__(dates)
 
     def make_query(self) -> list[Union[str, bool]]:
+        """create query for a date strategy."""
         if "current" in self.dates:
             return [self.current_query, False]
-
         elif "previous" in self.dates:
             return [self.previous_query, False]
-
         else:
             return [f"{self.query_base} WHERE date=%s", True]
 
 
 class multi_date(Dates_Strategy):
     def __init__(self, dates: list) -> None:
+        """set up base case variables."""
         super().__init__(dates)
 
     def make_query(self) -> list[Union[str, bool]]:
+        """create query for multi date strategy."""
         if "current" in self.dates and "previous" in self.dates and len(self.dates) == 2:
             return [f'({self.current_query}) UNION ({self.previous_query})', False]
 
@@ -74,12 +81,13 @@ class multi_date(Dates_Strategy):
 
 
 class Context:
-    """Strategy Handler for FOMC Statements"""
     def __init__(self, strategy: Dates_Strategy) -> None:
+        """set up base case variables"""
         self.strategy = strategy
         self.dates = strategy.get_internals()[0]
 
     def execute_strategy(self) -> dict:
+        """execute dates strategy."""
         if type(self.strategy) == a_date:
             return self.strategy.execute(a_date(self.dates).make_query())
         else:
