@@ -4,7 +4,7 @@ from app.models.federal_reserve.scenario import (Context, No_Dates_Strategy,
 
 class FOMC_Statement_Repo:
     def __init__(self, dates: str = None) -> None:
-        """set up base case variables."""
+        """Set up base case variables."""
         self.dates_str = dates
 
     def get_data(self) -> dict:

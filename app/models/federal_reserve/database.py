@@ -7,7 +7,7 @@ from app.config import RDS_HOST, RDS_PORT, RDS_PWORD, RDS_USER
 
 class DB_Model:
     def __init__(self) -> None:
-        """set up db variables."""
+        """Set up db variables."""
         self.host = RDS_HOST
         self.port = RDS_PORT
         self.user = RDS_USER
@@ -15,7 +15,7 @@ class DB_Model:
         self.db = 'fed'
 
     def __connect__(self) -> None:
-        """connect to database."""
+        """Connect to database."""
         self.connect = pymysql.connect(
             host=self.host,
             port=self.port,
@@ -26,11 +26,11 @@ class DB_Model:
         self.cur = self.connect.cursor()
 
     def __disconnect__(self):
-        """disconnect from database."""
+        """Disconnect from database."""
         self.connect.close()
 
     def create_table(self):
-        """create table."""
+        """Create table."""
         self.__connect__()
         query = """CREATE TABLE IF NOT EXISTS fomc_statements
                 (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -41,7 +41,7 @@ class DB_Model:
         self.__disconnect__()
 
     def fetch(self, query: str, data: Optional[tuple] = None) -> tuple:
-        """fetch from database."""
+        """Fetch from database."""
         self.__connect__()
         if data:
             self.cur.execute(query, data)
@@ -52,7 +52,7 @@ class DB_Model:
         return result
 
     def table_nuke(self) -> None:
-        """delete entire table."""
+        """Delete entire table."""
         self.__connect__()
         query = "DROP TABLE fomc_statements"
         self.cur.execute(query)
@@ -60,21 +60,21 @@ class DB_Model:
         self.__disconnect__()
 
     def execute(self, query: str) -> None:
-        """execute a query."""
+        """Execute a query."""
         self.__connect__()
         self.cur.execute(query)
         self.connect.commit()
         self.__disconnect__()
 
     def executemany(self, query: str, data: list) -> None:
-        """execute query with params."""
+        """Execute query with params."""
         self.__connect__()
         self.cur.executemany(query, data)
         self.connect.commit()
         self.__disconnect__()
 
     def to_dict(self, query: list, dates: Union[str, list] = None) -> dict:
-        """render hashmap of date as key and statement as value."""
+        """Render hashmap of date as key and statement as value."""
         self.__connect__()
         hashmap: dict = {}
         if dates:
