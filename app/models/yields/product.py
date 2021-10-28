@@ -1,6 +1,6 @@
 from typing import Type, Union
 
-from app.models.yields.database import DB_Model
+from app.models.yields.database import Yields_DB
 from app.util import tables
 
 
@@ -32,7 +32,7 @@ class Product():
 
     def fetch_data(self, query: list) -> tuple:
         """Get data from DB"""
-        return DB_Model().fetch(query, self.data)
+        return Yields_DB().fetch(query, self.data)
 
     def rate_to_dict(self, query: list) -> dict:
         """Convert tuple to hashmap"""
@@ -70,7 +70,7 @@ class UST(Product):
                    y10 varchar(10), y20 varchar(10), y30 varchar(10),
                    date DATE, year YEAR)
                 """
-        DB_Model().create_table(query)
+        Yields_DB().create_table(query)
 
 
 class JGB(Product):
@@ -101,7 +101,7 @@ class JGB(Product):
                    y15 varchar(10), y20 varchar(10), y30 varchar(10),
                    y40 varchar(10), date DATE, year YEAR)
                 """
-        DB_Model().create_table(query)
+        Yields_DB().create_table(query)
 
 
 class UKGB(Product):
@@ -132,4 +132,4 @@ class UKGB(Product):
                    y15 varchar(10), y20 varchar(10), y25 varchar(10),
                    y30 varchar(10), y40 varchar(10), date date, year year)
                 """
-        DB_Model().create_table(query)
+        Yields_DB().create_table(query)
