@@ -1,13 +1,13 @@
 from typing import Union
 
-from app.models.federal_reserve.database import DB_Model
+from app.models.federal_reserve.database import Fed_Model
 
 
 class Base_Case:
     def __init__(self) -> None:
         """Set up base case variables."""
         self.query_base = 'SELECT date, statement FROM fomc_statements'
-        self.db_model = DB_Model()
+        self.db_model = Fed_Model()
 
 
 class No_Dates_Strategy(Base_Case):
