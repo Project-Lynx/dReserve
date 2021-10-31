@@ -11,15 +11,23 @@ query_base = "SELECT date, statement FROM fomc_statements"
 
 
 class Test_No_Dates_Strategy(TestCase):
+    def setUp(self) -> None:
+        super().__init__()
+        self.test_class = No_Dates_Strategy
+
     def test_execute(self) -> None:
         with mock.patch(to_dict_patch) as patched:
             expected_pass = ['SELECT date, statement FROM fomc_statements', False]
             patched.return_value = None
-            No_Dates_Strategy().execute()
+            self.test_class().execute()
             patched.assert_called_with(expected_pass)
 
 
 class Test_Dates_Strategy(TestCase):
+    def setUp(self) -> None:
+        super().__init__()
+        self.test_class = Dates_Strategy
+
     def test_get_internals(self) -> None:
         scenarios: list[list[str]] = [
             ["2021-08-09"],
@@ -28,7 +36,7 @@ class Test_Dates_Strategy(TestCase):
             ["current,previous,2020-04-20,2020-03-20"],
         ]
         for scenario in scenarios:
-            result = Dates_Strategy(scenario).get_internals()
+            result = self.test_class(scenario).get_internals()
             self.assertEqual([scenario], result)
 
     def test_execute(self) -> None:
@@ -41,7 +49,7 @@ class Test_Dates_Strategy(TestCase):
         with mock.patch(to_dict_patch) as patched:
             patched.return_value = None
             for scenario in scenarios:
-                Dates_Strategy(scenario[1]).execute(scenario[0])
+                self.test_class(scenario[1]).execute(scenario[0])
                 if scenario[0][1] is True:
                     patched.assert_called_with(scenario[0], scenario[1])
                 else:

@@ -9,6 +9,10 @@ no_dates_patched = 'app.models.federal_reserve.scenario.No_Dates_Strategy.execut
 
 
 class Test_FOMC_Statement_Repo(TestCase):
+    def setUp(self) -> None:
+        super().__init__()
+        self.test_class = FOMC_Statement_Repo
+
     def test_get_data(self) -> None:
         scenarios = [
             "current", "current,previous",
@@ -16,12 +20,12 @@ class Test_FOMC_Statement_Repo(TestCase):
         ]
         with mock.patch(context_patched) as patched:
             for scenario in scenarios:
-                FOMC_Statement_Repo(scenario).get_data()
+                self.test_class(scenario).get_data()
                 patched.assert_called()
 
         with mock.patch(no_dates_patched) as patched:
             patched.return_value = None
-            FOMC_Statement_Repo().get_data()
+            self.test_class().get_data()
             patched.assert_called()
 
 
