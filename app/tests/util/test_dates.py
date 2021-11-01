@@ -9,15 +9,15 @@ class TestDates(unittest.TestCase):
             dates.convert_shorthand_month('Jan'), '01',
         )
         self.assertEqual(
-            dates.convert_shorthand_month('Mar'), '03',
+            dates.convert_shorthand_month('mar'), '03',
         )
         self.assertEqual(
             dates.convert_shorthand_month('May'), '05',
         )
         self.assertEqual(
-            dates.convert_shorthand_month('Dec'), '12',
+            dates.convert_shorthand_month('dec'), '12',
         )
-        with self.assertRaises(ValueError):
+        with self.assertRaises(KeyError):
             dates.convert_shorthand_month('January')
         with self.assertRaises(TypeError):
             dates.convert_shorthand_month(["Jan", "Feb"])
