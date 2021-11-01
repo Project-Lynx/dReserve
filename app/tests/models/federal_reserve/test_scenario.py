@@ -110,10 +110,10 @@ class test_Context(TestCase):
     def test_execute_strategy(self) -> None:
         with mock.patch('app.models.federal_reserve.scenario.a_date.execute') as patched:
             patched.return_value = None
-
             expected_query = [f"{query_base} ORDER BY id DESC LIMIT 1", False]
-            Context(a_date(["current"])).execute_strategy()
+            result = Context(a_date(["current"])).execute_strategy()
             patched.assert_called_with(expected_query)
+            self.assertIsNone(result)
 
         with mock.patch('app.models.federal_reserve.scenario.multi_date.execute') as patched:
             patched.return_value = None
@@ -123,8 +123,9 @@ class test_Context(TestCase):
             expected_c = f"({query_base} WHERE date IN %s)"
             expected_query = [f"{expected_a} UNION {expected_b} UNION {expected_c}", True]
 
-            Context(multi_date(dates)).execute_strategy()
+            result = Context(multi_date(dates)).execute_strategy()
             patched.assert_called_with(expected_query)
+            self.assertIsNone(result)
 
 
 if __name__ == "__main__":
