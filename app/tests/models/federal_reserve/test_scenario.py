@@ -7,7 +7,7 @@ from app.models.federal_reserve.scenario import (Context, Dates_Strategy,
                                                  multi_date)
 
 to_dict_patch = 'app.models.federal_reserve.database.Fed_Model.to_dict'
-query_base = "SELECT date, statement FROM fomc_statements"
+query_base = 'SELECT date, statement FROM fomc_statements'
 
 
 class Test_No_Dates_Strategy(TestCase):
@@ -43,7 +43,7 @@ class Test_Dates_Strategy(TestCase):
         scenarios: list[list[Union[list[Union[str, bool]], list]]] = [
             [[f"{query_base}  WHERE date=%s", True], ["2021-10-25"]],
             [[f"{query_base} WHERE date IN %s", True], ["2021-09-01", "2020-04-20"]],
-            [[f"({query_base} ORDER BY id ASC LIMIT 1) UNION ({query_base} WHERE date=%s)",
+            [[f"({query_base} ORDER BY id DESC LIMIT 1) UNION ({query_base} WHERE date=%s)",
               True], ["2020-01-12"]],
         ]
         with mock.patch(to_dict_patch) as patched:
@@ -61,11 +61,11 @@ class test_a_date(TestCase):
         scenarios: dict = {
             'scenario 1': {
                 'input': ["current"],
-                'expected output': [f"{query_base} ORDER BY id ASC LIMIT 1", False],
+                'expected output': [f"{query_base} ORDER BY id DESC LIMIT 1", False],
             },
             'scenario 2': {
                 'input': ["previous"],
-                'expected output': [f"{query_base} ORDER BY id ASC LIMIT 1, 1", False],
+                'expected output': [f"{query_base} ORDER BY id DESC LIMIT 1, 1", False],
             },
             'scenario 3': {
                 'input': ["2020-04-20"],
@@ -82,8 +82,8 @@ class test_a_date(TestCase):
 
 class test_multi_date(TestCase):
     def test_make_query(self) -> None:
-        current_query = f"({query_base} ORDER BY id ASC LIMIT 1)"
-        previous_query = f"({query_base} ORDER BY id ASC LIMIT 1, 1)"
+        current_query = f"({query_base} ORDER BY id DESC LIMIT 1)"
+        previous_query = f"({query_base} ORDER BY id DESC LIMIT 1, 1)"
         scenarios: dict = {
             'scenario 1': {
                 'input': ["current", "previous"],
@@ -111,15 +111,15 @@ class test_Context(TestCase):
         with mock.patch('app.models.federal_reserve.scenario.a_date.execute') as patched:
             patched.return_value = None
 
-            expected_query = [f"{query_base} ORDER BY id ASC LIMIT 1", False]
+            expected_query = [f"{query_base} ORDER BY id DESC LIMIT 1", False]
             Context(a_date(["current"])).execute_strategy()
             patched.assert_called_with(expected_query)
 
         with mock.patch('app.models.federal_reserve.scenario.multi_date.execute') as patched:
             patched.return_value = None
             dates = ["current", "previous", "2020-04-20"]
-            expected_a = f"({query_base} ORDER BY id ASC LIMIT 1)"
-            expected_b = f"({query_base} ORDER BY id ASC LIMIT 1, 1)"
+            expected_a = f"({query_base} ORDER BY id DESC LIMIT 1)"
+            expected_b = f"({query_base} ORDER BY id DESC LIMIT 1, 1)"
             expected_c = f"({query_base} WHERE date IN %s)"
             expected_query = [f"{expected_a} UNION {expected_b} UNION {expected_c}", True]
 

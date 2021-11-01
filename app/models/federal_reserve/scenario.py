@@ -7,6 +7,8 @@ class Base_Case:
     def __init__(self) -> None:
         """Set up base case variables."""
         self.query_base = 'SELECT date, statement FROM fomc_statements'
+        self.query_current = f'{self.query_base} ORDER BY id DESC LIMIT 1'
+        self.query_previous = f'{self.query_base} ORDER BY id DESC LIMIT 1, 1'
         self.db_model = Fed_Model()
 
 
@@ -26,8 +28,6 @@ class Dates_Strategy(Base_Case):
         """Set up base case variables."""
         super().__init__()
         self.dates = dates
-        self.current_query = f'{self.query_base} ORDER BY id ASC LIMIT 1'
-        self.previous_query = f'{self.query_base} ORDER BY id ASC LIMIT 1, 1'
 
     def get_internals(self) -> list:
         """Export internal variables."""
@@ -49,9 +49,9 @@ class a_date(Dates_Strategy):
     def make_query(self) -> list[Union[str, bool]]:
         """Create query for a date strategy."""
         if "current" in self.dates:
-            return [self.current_query, False]
+            return [self.query_current, False]
         elif "previous" in self.dates:
-            return [self.previous_query, False]
+            return [self.query_previous, False]
         else:
             return [f"{self.query_base} WHERE date=%s", True]
 
@@ -64,17 +64,17 @@ class multi_date(Dates_Strategy):
     def make_query(self) -> list[Union[str, bool]]:
         """Create query for multi date strategy."""
         if "current" in self.dates and "previous" in self.dates and len(self.dates) == 2:
-            return [f'({self.current_query}) UNION ({self.previous_query})', False]
+            return [f'({self.query_current}) UNION ({self.query_previous})', False]
 
         elif "current" in self.dates and "previous" in self.dates and len(self.dates) > 2:
-            return [f'({self.current_query}) UNION ({self.previous_query}) UNION ' +
+            return [f'({self.query_current}) UNION ({self.query_previous}) UNION ' +
                     f'({self.query_base} WHERE date IN %s)', True]
 
         elif "current" in self.dates:
-            return [f'({self.current_query}) UNION ({self.query_base} WHERE date IN %s)', True]
+            return [f'({self.query_current}) UNION ({self.query_base} WHERE date IN %s)', True]
 
         elif "previous" in self.dates:
-            return [f'({self.previous_query}) UNION ({self.query_base} WHERE date IN %s)', True]
+            return [f'({self.query_previous}) UNION ({self.query_base} WHERE date IN %s)', True]
 
         else:
             return [f'{self.query_base} WHERE date IN %s', True]
