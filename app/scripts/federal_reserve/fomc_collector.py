@@ -62,6 +62,7 @@ def check_for_new() -> Union[list[str], None]:
 
 
 def get_new_statement() -> Union[list, None]:
+    """Fetch new FOMC statement."""
     new = check_for_new()
     if new is None:
         return None
@@ -70,6 +71,7 @@ def get_new_statement() -> Union[list, None]:
 
 
 def parse_statement() -> str:
+    """Parse statement."""
     statement = get_new_statement()
     if statement:
         cleaned_paragraphs = []
@@ -90,6 +92,7 @@ def parse_statement() -> str:
 
 
 def add_to_db() -> None:
+    """Add new statement to database."""
     new = check_for_new()
     if new:
         date = new[0]
@@ -101,3 +104,7 @@ def add_to_db() -> None:
        "INSERT INTO fomc_statements (date,year,statement) VALUES (%s,%s,%s)",
        data,
     )
+
+
+if __name__ == '__main__':
+    add_to_db()
