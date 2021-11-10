@@ -5,13 +5,13 @@ from app.util import dates
 
 class Collection(Meta):
     def __init__(self) -> None:
-        super().__init__("UKGB", Yields_DB)
+        url = "http://www.worldgovernmentbonds.com/bond-historical-data/united-kingdom/1-month/"
+        super().__init__(url, "UKGB", Yields_DB)
 
     def parse_data(self) -> list[tuple]:
         """Parsing data."""
-        url = "http://www.worldgovernmentbonds.com/bond-historical-data/united-kingdom/1-month/"
-        data = self.get_data(url).findAll("td", {'class': "w3-center"})
-        date = self.get_data(url).find("p", {'class': "w3-small w3-right"}).text
+        data = self.get_data().findAll("td", {'class': "w3-center"})
+        date = self.get_data().find("p", {'class': "w3-small w3-right"}).text
         date_list = list(date.split())
         day = date_list[2]
         month = dates.convert_shorthand_month(date_list[3])

@@ -19,8 +19,7 @@ class test_jgb_collector(TestCase):
     def test_get_data(self) -> None:
         with mock.patch("requests.get") as patched:
             patched.return_value.text = self.demo
-            url = "http://www.worldgovernmentbonds.com/bond-historical-data/japan/1-month/"
-            result = self.model.get_data(url)
+            result = self.model.get_data()
             self.assertIsInstance(result, bs4.BeautifulSoup)
 
     def test_parse_data(self) -> None:
@@ -37,9 +36,9 @@ class test_jgb_collector(TestCase):
                 vals_ph = "(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
                 query = f"INSERT INTO JGB_table {cols} VALUES {vals_ph}"
 
-                result = self.model.add_to_db(query, self.demo_data)
+                self.model.add_to_db(query, self.demo_data)
                 executemany_patch.assert_called_with(query, self.demo_data)
-                self.assertIsNone(result)
+                self.assertIsNone(self.model.add_to_db(query, self.demo_data))
 
 
 if __name__ == "__main__":

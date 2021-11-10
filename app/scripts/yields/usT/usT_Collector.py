@@ -4,11 +4,12 @@ from app.models.yields.database import Yields_DB
 
 class Collection(Meta):
     def __init__(self) -> None:
-        super().__init__("UST", Yields_DB)
+        url = "https://data.treasury.gov/feed.svc/DailyTreasuryYieldCurveRateData"
+        super().__init__(url, "UST", Yields_DB)
 
     def parse_data(self) -> list[tuple]:
         """Parsing data."""
-        data = self.get_data("https://data.treasury.gov/feed.svc/DailyTreasuryYieldCurveRateData")
+        data = self.get_data()
         entries = data.findAll("entry")
         entry = entries[-1]
 
