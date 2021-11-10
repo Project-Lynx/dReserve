@@ -20,6 +20,5 @@ class Yields_DB(DB_Meta):
             self.cur.execute(query[0])
 
         result = self.cur.fetchall()
-        print(result)
         self.__disconnect__()
         return result
