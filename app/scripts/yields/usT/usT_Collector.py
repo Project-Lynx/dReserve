@@ -1,50 +1,32 @@
-import requests as req
-from bs4 import BeautifulSoup as bs
+from app.models.yields.collection import Meta
+from app.models.yields.database import Yields_DB
 
-from app.models.yields import Meta as yields_model
-from app.util import tables
 
-# Define Model & Table
-model = yields_model()
-table = tables.get_table("UST")
+class Collection(Meta):
+    def __init__(self) -> None:
+        url = "https://data.treasury.gov/feed.svc/DailyTreasuryYieldCurveRateData"
+        super().__init__(url, "UST", Yields_DB)
 
-# Collect data
-url = "https://data.treasury.gov/feed.svc/DailyTreasuryYieldCurveRateData"
-response = req.request("GET", url)
-parsed = bs(response.text, "lxml")
+    def parse_data(self) -> list[tuple]:
+        """Parsing data."""
+        data = self.get_data()
+        entries = data.findAll("entry")
+        entry = entries[-1]
 
-# Target data
-entries = parsed.findAll("entry")
-entry = entries[-1]
+        unclean_date, d_end = entry.find("d:new_date").text, (entry.find("d:new_date").text).find("T")
+        date, year = unclean_date[:d_end], (unclean_date[:d_end])[:4]
 
-# Parse dates
-_date = entry.find("d:new_date").text
-d_end = _date.find("T")
-_date = _date[:d_end]
-year = _date[:4]
+        self.dataset = [
+            entry.find("d:bc_1month").text, entry.find("d:bc_2month").text,
+            entry.find("d:bc_3month").text, entry.find("d:bc_6month").text,
+            entry.find("d:bc_1year").text, entry.find("d:bc_2year").text,
+            entry.find("d:bc_3year").text, entry.find("d:bc_5year").text,
+            entry.find("d:bc_7year").text, entry.find("d:bc_10year").text,
+            entry.find("d:bc_20year").text, entry.find("d:bc_30year").text,
+        ]
 
-# Parse data to fit model
-m1 = entry.find("d:bc_1month").text
-m2 = entry.find("d:bc_2month").text
-m3 = entry.find("d:bc_3month").text
-m6 = entry.find("d:bc_6month").text
-y1 = entry.find("d:bc_1year").text
-y2 = entry.find("d:bc_2year").text
-y3 = entry.find("d:bc_3year").text
-y5 = entry.find("d:bc_5year").text
-y7 = entry.find("d:bc_7year").text
-y10 = entry.find("d:bc_10year").text
-y20 = entry.find("d:bc_20year").text
-y30 = entry.find("d:bc_30year").text
-temp_list = [(
-   m1, m2, m3, m6, y1, y2, y3, y5,
-   y7, y10, y20, y30, _date, year,
-)]
-
-# Adding data to table
-cols = "(m1, m2, m3, m6, y1, y2, y3, y5, y7, y10, y20, y30, date, year)"
-vals_ph = "(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-model.executemany(
-    f"INSERT INTO {table} {cols} VALUES {vals_ph}",
-    temp_list,
-)
+        return [
+           (self.dataset[0], self.dataset[1], self.dataset[2], self.dataset[3], self.dataset[4],
+            self.dataset[5], self.dataset[6], self.dataset[7], self.dataset[8], self.dataset[9],
+            self.dataset[10], self.dataset[11], date, year),
+        ]
