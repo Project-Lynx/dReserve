@@ -35,44 +35,47 @@ class collectors(TestCase):
                 self.assertIsInstance(result, bs4.BeautifulSoup)
 
     def test_parse_data(self) -> None:
-        for i in range(self.n):
-            if isinstance(self.models[i], JGB_Model):
-                patch = "app.scripts.yields.JGB.JGB_Collector.Collection.get_data"
-            elif isinstance(self.models[i], UKGB_Model):
-                patch = "app.scripts.yields.ukGB.ukGB_Collector.Collection.get_data"
-            else:
-                patch = "app.scripts.yields.usT.usT_Collector.Collection.get_data"
-            with mock.patch(patch) as patched:
-                patched.return_value = bs(self.demo[i], "lxml")
-                result = self.models[i].parse_data()
-                self.assertEqual(result, self.demo_data[i])
+        with mock.patch("app.scripts.yields.JGB.JGB_Collector.Collection.get_data") as patched:
+            patched.return_value = bs(self.demo[0], "lxml")
+            result = self.models[0].parse_data()
+            self.assertEqual(result, self.demo_data[0])
+
+        with mock.patch("app.scripts.yields.ukGB.ukGB_Collector.Collection.get_data") as patched:
+            patched.return_value = bs(self.demo[1], "lxml")
+            result = self.models[1].parse_data()
+            self.assertEqual(result, self.demo_data[1])
+
+        with mock.patch("app.scripts.yields.usT.usT_Collector.Collection.get_data") as patched:
+            patched.return_value = bs(self.demo[2], "lxml")
+            result = self.models[2].parse_data()
+            self.assertEqual(result, self.demo_data[2])
 
     def test_add_to_db(self) -> None:
         with mock.patch("app.models.database_meta.DB_Meta.executemany") as executemany_patch:
-            for i in range(self.n):
-                if isinstance(self.models[i], JGB_Model):
-                    patch = "app.scripts.yields.JGB.JGB_Collector.Collection.parse_data"
-                    cols = "(m1, m3, m6, y1, y2, y3, y5, y7, y10, y15, y20, y30, y40, date, year)"
-                    vals_ph = "(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-                    table = "JGB_table"
-                elif isinstance(self.models[i], UKGB_Model):
-                    patch = "app.scripts.yields.JGB.JGB_Collector.Collection.parse_data"
-                    cols = "(m1, m3, m6, y1, y2, y3, y5, y7, y10, y15, y20, y25, y30, y40, date, year)"
-                    vals_ph = "(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-                    table = "ukGB_table"
-                else:
-                    patch = "app.scripts.yields.JGB.JGB_Collector.Collection.parse_data"
-                    cols = "(m1, m2, m3, m6, y1, y2, y3, y5, y7, y10, y20, y30, date, year)"
-                    vals_ph = "(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-                    table = "usT_table"
+            with mock.patch("app.scripts.yields.JGB.JGB_Collector.Collection.parse_data") as parse_patch:
+                cols = "(m1, m3, m6, y1, y2, y3, y5, y7, y10, y15, y20, y30, y40, date, year)"
+                vals_ph = "(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+                table = "JGB_table"
+                parse_patch.return_value = self.demo_data[0]
+                self.models[0].add_to_db(f"INSERT INTO {table} {cols} VALUES {vals_ph}", self.demo_data[0])
+                executemany_patch.assert_called_with(f"INSERT INTO {table} {cols} VALUES {vals_ph}", self.demo_data[0])
+                self.assertIsNone(self.models[0].add_to_db(f"INSERT INTO {table} {cols} VALUES {vals_ph}", self.demo_data[0]))
 
-                with mock.patch(patch) as parse_patch:
-                    parse_patch.return_value = self.demo_data[i]
-                    query = f"INSERT INTO {table} {cols} VALUES {vals_ph}"
+            with mock.patch("app.scripts.yields.ukGB.ukGB_Collector.Collection.parse_data") as parse_patch:
+                cols = "(m1, m3, m6, y1, y2, y3, y5, y7, y10, y15, y20, y25, y30, y40, date, year)"
+                vals_ph = "(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+                table = "ukGB_table"
+                self.models[1].add_to_db(f"INSERT INTO {table} {cols} VALUES {vals_ph}", self.demo_data[1])
+                executemany_patch.assert_called_with(f"INSERT INTO {table} {cols} VALUES {vals_ph}", self.demo_data[1])
+                self.assertIsNone(self.models[1].add_to_db(f"INSERT INTO {table} {cols} VALUES {vals_ph}", self.demo_data[1]))
 
-                    self.models[i].add_to_db(query, self.demo_data[i])
-                    executemany_patch.assert_called_with(query, self.demo_data[i])
-                    self.assertIsNone(self.models[i].add_to_db(query, self.demo_data[i]))
+            with mock.patch("app.scripts.yields.usT.usT_Collector.Collection.parse_data") as parse_patch:
+                cols = "(m1, m2, m3, m6, y1, y2, y3, y5, y7, y10, y20, y30, date, year)"
+                vals_ph = "(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+                table = "usT_table"
+                self.models[2].add_to_db(f"INSERT INTO {table} {cols} VALUES {vals_ph}", self.demo_data[2])
+                executemany_patch.assert_called_with(f"INSERT INTO {table} {cols} VALUES {vals_ph}", self.demo_data[2])
+                self.assertIsNone(self.models[2].add_to_db(f"INSERT INTO {table} {cols} VALUES {vals_ph}", self.demo_data[2]))
 
 
 if __name__ == "__main__":
