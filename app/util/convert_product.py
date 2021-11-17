@@ -1,3 +1,5 @@
+from typing import Type, Union
+
 from app.models.yields.product import (Argentina, Australia, Austria, Bahrain,
                                        Bangledesh, Belgium, Botswana, Brazil,
                                        Bulgaria, Canada, Chile, China,
@@ -40,7 +42,11 @@ hashmap = {
 }
 
 
-def get_class(nation: str) -> None:
+def get_class(nation: str) -> Type[Union[Argentina, Australia, Austria,
+                                         Bahrain, Bangledesh, Belgium,
+                                         Botswana, Brazil, Bulgaria,
+                                         Canada, Chile, China, Colombia,
+                                         Crotia, Cyprus, Czech_Republic]]:
     if nation not in hashmap:
         raise ValueError(f"Invalid nation: {nation} check the documentation for valid nations!")
     return hashmap[nation]
