@@ -1766,3 +1766,26 @@ class Uganda(Product):
                     10y varchar(7), 15y varchar(7), date DATE, year YEAR)
                 """
         Yields_DB().create_table(query)
+
+
+class Ukraine(Product):
+    """Ukrainian Government Bonds."""
+    def __init__(self, data: list = []) -> None:
+        super().__init__(product="UgandaGB", data=data)
+        self.columns = "1y,2y,3y,date"
+
+    def to_dict(self, query: list = []) -> dict:
+        for idx in enumerate(self.fetch_data(query)):
+            key = str(idx[1][-2])
+            self.output[key] = {
+                '1 Year': idx[1][0], '2 Year': idx[1][1], '3 Year': idx[1][2],
+            }
+        return self.output
+
+    def create_table(self) -> None:
+        query = """CREATE TABLE IF NOT EXISTS UgandaGB
+                   (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    1y varchar(7), 2y varchar(7), 3y varchar(7),
+                    date DATE, year YEAR)
+                """
+        Yields_DB().create_table(query)
