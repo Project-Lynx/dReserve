@@ -4,7 +4,8 @@ from app.models.yields.product import (Argentina, Australia, Austria, Bahrain,
                                        Bangledesh, Belgium, Botswana, Brazil,
                                        Bulgaria, Canada, Chile, China,
                                        Colombia, Crotia, Cyprus,
-                                       Czech_Republic)
+                                       Czech_Republic, Egypt, France, Germany,
+                                       Greece)
 
 hashmap = {
     "Argentina": Argentina,
@@ -39,6 +40,14 @@ hashmap = {
     "cyprus": Cyprus,
     "Czech Republic": Czech_Republic,
     "czech republic": Czech_Republic,
+    "Egypt": Egypt,
+    "egypt": Egypt,
+    "France": France,
+    "france": France,
+    "Germany": Germany,
+    "germany": Germany,
+    "Greece": Greece,
+    "greece": Greece,
 }
 
 
@@ -46,7 +55,8 @@ def get_class(nation: str) -> Type[Union[Argentina, Australia, Austria,
                                          Bahrain, Bangledesh, Belgium,
                                          Botswana, Brazil, Bulgaria,
                                          Canada, Chile, China, Colombia,
-                                         Crotia, Cyprus, Czech_Republic]]:
+                                         Crotia, Cyprus, Czech_Republic,
+                                         Egypt, France, Germany, Greece]]:
     if nation not in hashmap:
         raise ValueError(f"Invalid nation: {nation} check the documentation for valid nations!")
     return hashmap[nation]
