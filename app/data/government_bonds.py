@@ -4,7 +4,7 @@ from app.models.yields.product import (Argentina, Australia, Austria, Bahrain,
                                        Colombia, Crotia, Cyprus,
                                        Czech_Republic, Egypt, France, Germany,
                                        Greece, Hong_Kong, Hungary, Iceland,
-                                       India, Indonesia)
+                                       India, Indonesia, Ireland)
 
 hashmap = {
     "Argentina": Argentina,
@@ -57,4 +57,6 @@ hashmap = {
     "india": India,
     "Indonesia": Indonesia,
     "indonesia": Indonesia,
+    "Ireland": Ireland,
+    "ireland": Ireland,
 }
