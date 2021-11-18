@@ -17,6 +17,15 @@ from app.models.yields.product import (Argentina, Australia, Austria, Bahrain,
                                        South_Africa)
 
 
+def parse_nation_name(nation: str) -> str:
+    """Parse nation string to be Uppercase First letter & lowercase rest."""
+    if " " in nation:
+        split = nation.split(" ")
+        return f"{split[0][0].upper()}{split[0][1:].lower()} {split[1][0].upper()}{split[1][1:].lower()}"
+
+    return f"{nation[0].upper()}{nation[1:].lower()}"
+
+
 def get_class(nation: str) -> Type[Union[Argentina, Australia, Austria,
                                          Bahrain, Bangledesh, Belgium,
                                          Botswana, Brazil, Bulgaria,
@@ -33,10 +42,7 @@ def get_class(nation: str) -> Type[Union[Argentina, Australia, Austria,
                                          Romania, Russia, Serbia, Singapore,
                                          Slovenia, South_Africa]]:
     """Convert nation name to product class."""
-
-    # Parse nation name to be Uppercase first letter and lowercase rest.
-    nation = f"{nation[0].upper()}{nation[1:].lower()}"
-
-    if nation not in hashmap:
+    nation_parsed = parse_nation_name(nation)
+    if nation_parsed not in hashmap:
         raise ValueError(f"Invalid nation: {nation} check the documentation for valid nations!")
-    return hashmap[nation]
+    return hashmap[nation_parsed]
