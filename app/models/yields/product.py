@@ -1538,3 +1538,30 @@ class South_Africa(Product):
                     25y varchar(7), 30y varchar(7), date DATE, year YEAR)
                 """
         Yields_DB().create_table(query)
+
+
+class South_Korea(Product):
+    """South Korean Government Bonds."""
+    def __init__(self, data: list = []) -> None:
+        super().__init__(product="SouthKoreaGB", data=data)
+        self.columns = "1y,2y,3y,4y,5y,10y,20y,30y,50y,date"
+
+    def to_dict(self, query: list = []) -> dict:
+        for idx in enumerate(self.fetch_data(query)):
+            key = str(idx[1][-2])
+            self.output[key] = {
+                '1 Year': idx[1][0], '2 Year': idx[1][1], '3 Year': idx[1][2],
+                '4 Year': idx[1][3], '5 Year': idx[1][4], '10 Year': idx[1][5],
+                '20 Year': idx[1][6], '30 Year': idx[1][7], '50 Year': idx[1][8],
+            }
+        return self.output
+
+    def create_table(self) -> None:
+        query = """CREATE TABLE IF NOT EXISTS SouthKoreaGB
+                   (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    1y varchar(7), 2y varchar(7), 3y varchar(7),
+                    4y varchar(7), 5y varchar(7), 10y varchar(7),
+                    20y varchar(7), 30y varchar(7), 50y varchar(7),
+                    date DATE, year YEAR)
+                """
+        Yields_DB().create_table(query)
