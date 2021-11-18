@@ -10,7 +10,7 @@ from app.models.yields.product import (Argentina, Australia, Austria, Bahrain,
                                        India, Indonesia, Ireland, Israel,
                                        Italy, Japan, Jordan, Kazakhstan, Kenya,
                                        Malaysia, Malta, Mauritius, Mexico,
-                                       Morocco, Namibia, Netherlands)
+                                       Morocco, Namibia, Netherlands, Nigeria)
 
 
 def get_class(nation: str) -> Type[Union[Argentina, Australia, Austria,
@@ -23,7 +23,8 @@ def get_class(nation: str) -> Type[Union[Argentina, Australia, Austria,
                                          India, Indonesia, Ireland, Israel,
                                          Italy, Japan, Jordan, Kazakhstan,
                                          Kenya, Malaysia, Malta, Mauritius,
-                                         Mexico, Morocco, Namibia, Netherlands]]:
+                                         Mexico, Morocco, Namibia, Netherlands,
+                                         Nigeria]]:
     """Convert nation name to product class."""
     if nation not in hashmap:
         raise ValueError(f"Invalid nation: {nation} check the documentation for valid nations!")
