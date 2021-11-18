@@ -16,7 +16,8 @@ from app.models.yields.product import (Argentina, Australia, Austria, Bahrain,
                                        Russia, Serbia, Singapore, Slovenia,
                                        South_Africa, South_Korea, Spain,
                                        Sri_Lanka, Switzerland, Taiwan,
-                                       Thailand, Turkey, Uganda, Ukraine)
+                                       Thailand, Turkey, Uganda, Ukraine,
+                                       United_Kingdom)
 
 
 def parse_nation_name(nation: str) -> str:
@@ -44,7 +45,8 @@ def get_class(nation: str) -> Type[Union[Argentina, Australia, Austria,
                                          Romania, Russia, Serbia, Singapore,
                                          Slovenia, South_Africa, South_Korea,
                                          Spain, Sri_Lanka, Switzerland, Taiwan,
-                                         Thailand, Turkey, Uganda, Ukraine]]:
+                                         Thailand, Turkey, Uganda, Ukraine,
+                                         United_Kingdom]]:
     """Convert nation name to product class."""
     nation_parsed = parse_nation_name(nation)
     if nation_parsed not in hashmap:
