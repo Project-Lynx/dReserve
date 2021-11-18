@@ -1340,7 +1340,7 @@ class Qatar(Product):
         return self.output
 
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS PortugalGB
+        query = """CREATE TABLE IF NOT EXISTS QatarGB
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     2y varchar(7), 3y varchar(7), 5y varchar(7),
                     10y varchar(7), 30y varchar(7), date DATE, year YEAR)
