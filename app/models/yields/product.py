@@ -1209,3 +1209,28 @@ class Pakistan(Product):
                     14y varchar(7), 20yvarchar(7), date DATE, year YEAR)
                 """
         Yields_DB().create_table(query)
+
+
+class Peru(Product):
+    """Peruvian Government Bonds."""
+    def __init__(self, data: list = []) -> None:
+        super().__init__(product="PeruGB", data=data)
+        self.columns = "2y,5y,10y,15y,20y,30y,date"
+
+    def to_dict(self, query: list = []) -> dict:
+        for idx in enumerate(self.fetch_data(query)):
+            key = str(idx[1][-2])
+            self.output[key] = {
+                '2 Year': idx[1][0], '5 Year': idx[1][1], '10 Year': idx[1][2],
+                '15 Year': idx[1][3], '20 Year': idx[1][4], '30 Year': idx[1][5],
+            }
+        return self.output
+
+    def create_table(self) -> None:
+        query = """CREATE TABLE IF NOT EXISTS PeruGB
+                   (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    2y varchar(7), 5y varchar(7), 10y varchar(7),
+                    15y varchar(7), 20y varchar(7), 30y varchar(7),
+                    date DATE, year YEAR)
+                """
+        Yields_DB().create_table(query)
