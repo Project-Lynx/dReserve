@@ -1,5 +1,6 @@
 from typing import Type, Union
 
+from app.data.government_bonds import hashmap
 from app.models.yields.product import (Argentina, Australia, Austria, Bahrain,
                                        Bangledesh, Belgium, Botswana, Brazil,
                                        Bulgaria, Canada, Chile, China,
@@ -7,57 +8,6 @@ from app.models.yields.product import (Argentina, Australia, Austria, Bahrain,
                                        Czech_Republic, Egypt, France, Germany,
                                        Greece, Hong_Kong, Hungary, Iceland,
                                        India)
-
-hashmap = {
-    "Argentina": Argentina,
-    "argentina": Argentina,
-    "Australia": Australia,
-    "australia": Australia,
-    "Austria": Austria,
-    "austria": Austria,
-    "Bahrain": Bahrain,
-    "bahrain": Bahrain,
-    "Bangledesh": Bangledesh,
-    "bangledesh": Bangledesh,
-    "Belgium": Belgium,
-    "belgium": Belgium,
-    "Botswana": Botswana,
-    "botswana": Botswana,
-    "Brazil": Brazil,
-    "brazil": Brazil,
-    "Bulgaria": Bulgaria,
-    "bulgaria": Bulgaria,
-    "Canada": Canada,
-    "canada": Canada,
-    "Chile": Chile,
-    "chile": Chile,
-    "China": China,
-    "china": China,
-    "Colombia": Colombia,
-    "colombia": Colombia,
-    "Crotia": Crotia,
-    "crotia": Crotia,
-    "Cyprus": Cyprus,
-    "cyprus": Cyprus,
-    "Czech Republic": Czech_Republic,
-    "czech republic": Czech_Republic,
-    "Egypt": Egypt,
-    "egypt": Egypt,
-    "France": France,
-    "france": France,
-    "Germany": Germany,
-    "germany": Germany,
-    "Greece": Greece,
-    "greece": Greece,
-    "Hong Kong": Hong_Kong,
-    "hong kong": Hong_Kong,
-    "Hungary": Hungary,
-    "hungary": Hungary,
-    "Iceland": Iceland,
-    "iceland": Iceland,
-    "India": India,
-    "india": India,
-}
 
 
 def get_class(nation: str) -> Type[Union[Argentina, Australia, Austria,
@@ -68,6 +18,7 @@ def get_class(nation: str) -> Type[Union[Argentina, Australia, Austria,
                                          Egypt, France, Germany, Greece,
                                          Hong_Kong, Hungary, Iceland,
                                          India]]:
+    """Convert nation name to product class."""
     if nation not in hashmap:
         raise ValueError(f"Invalid nation: {nation} check the documentation for valid nations!")
     return hashmap[nation]
