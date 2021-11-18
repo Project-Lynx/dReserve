@@ -529,7 +529,7 @@ class France(Product):
 class Germany(Product):
     """German Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="FranceGB", data=data)
+        super().__init__(product="GermanGB", data=data)
         self.columns = "3m,6m,9m,1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,15y,20y,25y,30y,date"
 
     def to_dict(self, query: list = []) -> dict:
@@ -546,7 +546,7 @@ class Germany(Product):
         return self.output
 
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS FranceGB
+        query = """CREATE TABLE IF NOT EXISTS GermanGB
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     3m varchar(7), 6m varchar(7), 9m varchar(7),
                     1y varchar(7), 2y varchar(7), 3y varchar(7),
