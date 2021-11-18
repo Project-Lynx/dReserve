@@ -520,7 +520,7 @@ class France(Product):
                     3y varchar(7), 4y varchar(7), 5y varchar(7),
                     6y varchar(7), 7y varchar(7), 8y varchar(7),
                     9y varchar(7), 10y varchar(7), 15y varchar(7),
-                    20y varchar(7), 25y varchar(7), 30 varchar(7),
+                    20y varchar(7), 25y varchar(7), 30y varchar(7),
                     50y varchar(7), date DATE, year YEAR)
                 """
         Yields_DB().create_table(query)
