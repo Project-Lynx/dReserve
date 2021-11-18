@@ -637,3 +637,26 @@ class Hungary(Product):
                     15y varhcar(7), date DATE, year YEAR)
                 """
         Yields_DB().create_table(query)
+
+
+class Iceland(Product):
+    """Iceland Government Bonds."""
+    def __init__(self, data: list = []) -> None:
+        super().__init__(product="IcelandGB", data=data)
+        self.columns = "2y,5y,10y,date"
+
+    def to_dict(self, query: list = []) -> dict:
+        for idx in enumerate(self.fetch_data(query)):
+            key = str(idx[1][-2])
+            self.output[key] = {
+                '2 Year': idx[1][0], '5 Year': idx[1][1], '10 Year': idx[1][2],
+            }
+        return self.output
+
+    def create_table(self) -> None:
+        query = """CREATE TABLE IF NOT EXISTS IcelandGB
+                   (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    2y varchar(7), 5y varchar(7), 10y varchar(7),
+                    date DATE, year YEAR)
+                """
+        Yields_DB().create_table(query)
