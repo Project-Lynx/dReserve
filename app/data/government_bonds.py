@@ -7,7 +7,8 @@ from app.models.yields.product import (Argentina, Australia, Austria, Bahrain,
                                        India, Indonesia, Ireland, Israel,
                                        Italy, Japan, Jordan, Kazakhstan, Kenya,
                                        Malaysia, Malta, Mauritius, Mexico,
-                                       Morocco, Namibia, Netherlands, Nigeria)
+                                       Morocco, Namibia, Netherlands, Nigeria,
+                                       Norway)
 
 hashmap = {
     "Argentina": Argentina,
@@ -90,4 +91,6 @@ hashmap = {
     "netherlands": Netherlands,
     "Nigeria": Nigeria,
     "nigeria": Nigeria,
+    "Norway": Norway,
+    "norway": Norway,
 }
