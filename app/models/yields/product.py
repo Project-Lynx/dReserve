@@ -1047,3 +1047,28 @@ class Mexico(Product):
                     date DATE, year YEAR)
                 """
         Yields_DB().create_table(query)
+
+
+class Morocco(Product):
+    """Moroccan Government Bonds."""
+    def __init__(self, data: list = []) -> None:
+        super().__init__(product="MoroccoGB", data=data)
+        self.columns = "3m,6m,2y,5y,10y,15y,date"
+
+    def to_dict(self, query: list = []) -> dict:
+        for idx in enumerate(self.fetch_data(query)):
+            key = str(idx[1][-2])
+            self.output[key] = {
+                '3 Month': idx[1][0], '6 Month': idx[1][1], '2 Year': idx[1][2],
+                '5 Year': idx[1][3], '10 Year': idx[1][4], '15 Year': idx[1][5],
+            }
+        return self.output
+
+    def create_table(self) -> None:
+        query = """CREATE TABLE IF NOT EXISTS MoroccoGB
+                   (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    3m varchar(7), 6m varchar(7), 2y varchar(7),
+                    5y varchar(7), 10y varchar(7), 15y varchar(7),
+                    date DATE, year YEAR)
+                """
+        Yields_DB().create_table(query)
