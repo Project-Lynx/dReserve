@@ -1662,3 +1662,27 @@ class Switzerland(Product):
                     30y varchar(7), 50y varchar(7), date DATE, year YEAR)
                 """
         Yields_DB().create_table(query)
+
+
+class Taiwan(Product):
+    """Taiwanese Government Bonds."""
+    def __init__(self, data: list = []) -> None:
+        super().__init__(product="TaiwanGB", data=data)
+        self.columns = "2y,5y,10y,20y,30y,date"
+
+    def to_dict(self, query: list = []) -> dict:
+        for idx in enumerate(self.fetch_data(query)):
+            key = str(idx[1][-2])
+            self.output[key] = {
+                '2 Year': idx[1][0], '5 Year': idx[1][1], '10 Year': idx[1][2],
+                '20 Year': idx[1][3], '30 Year': idx[1][4],
+            }
+        return self.output
+
+    def create_table(self) -> None:
+        query = """CREATE TABLE IF NOT EXISTS TaiwanGB
+                   (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    2y varchar(7), 5y varchar(7), 10y varchar(7),
+                    20y varchar(7), 30y varchar(7), date DATE, year YEAR)
+                """
+        Yields_DB().create_table(query)
