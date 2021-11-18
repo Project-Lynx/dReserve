@@ -29,6 +29,10 @@ def get_class(nation: str) -> Type[Union[Argentina, Australia, Austria,
                                          Nigeria, Norway, Pakistan, Peru,
                                          Philippines, Poland, Portugal, Qatar]]:
     """Convert nation name to product class."""
+
+    # Parse nation name to be Uppercase first letter and lowercase rest.
+    nation = f"{nation[0].upper()}{nation[1:].lower()}"
+
     if nation not in hashmap:
         raise ValueError(f"Invalid nation: {nation} check the documentation for valid nations!")
     return hashmap[nation]
