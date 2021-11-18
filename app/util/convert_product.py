@@ -12,7 +12,7 @@ from app.models.yields.product import (Argentina, Australia, Austria, Bahrain,
                                        Malaysia, Malta, Mauritius, Mexico,
                                        Morocco, Namibia, Netherlands, Nigeria,
                                        Norway, Pakistan, Peru, Philippines,
-                                       Poland, Portugal, Qatar)
+                                       Poland, Portugal, Qatar, Romania)
 
 
 def get_class(nation: str) -> Type[Union[Argentina, Australia, Austria,
@@ -27,7 +27,8 @@ def get_class(nation: str) -> Type[Union[Argentina, Australia, Austria,
                                          Kenya, Malaysia, Malta, Mauritius,
                                          Mexico, Morocco, Namibia, Netherlands,
                                          Nigeria, Norway, Pakistan, Peru,
-                                         Philippines, Poland, Portugal, Qatar]]:
+                                         Philippines, Poland, Portugal, Qatar,
+                                         Romania]]:
     """Convert nation name to product class."""
 
     # Parse nation name to be Uppercase first letter and lowercase rest.
