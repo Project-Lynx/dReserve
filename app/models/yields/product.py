@@ -496,7 +496,7 @@ class France(Product):
     """French Government Bonds."""
     def __init__(self, data: list = []) -> None:
         super().__init__(product="FranceGB", data=data)
-        self.columns = "1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,15y,20y,50y,date"
+        self.columns = "1m,3m,6m,9m,1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,15y,20y,25y,30y,50y,date"
 
     def to_dict(self, query: list = []) -> dict:
         for idx in enumerate(self.fetch_data(query)):
