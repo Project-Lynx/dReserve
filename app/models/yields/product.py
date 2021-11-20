@@ -11,10 +11,6 @@ class Product():
         self.x_path_base = "/html/body/div[5]/section/"
         self.collection_query = f"INSERT INTO {product} ({columns}) VALUES {self.vals_ph}"
 
-    def fetch_data(self, query: list, data: list = []) -> tuple:
-        """Get data from DB"""
-        return Yields_DB().fetch(query, data)
-
     def add_to_db_query(self) -> str:
         """Output query to add collected data to db."""
         print(self.columns)
@@ -23,7 +19,7 @@ class Product():
 
     def rate_to_dict(self, query: list) -> dict:
         """Convert tuple to hashmap"""
-        data = self.fetch_data(query)
+        data = Yields_DB().fetch(query)
         for idx in enumerate(data):
             key = str(idx[1][0])
             self.output[key] = idx[1][1]
@@ -36,11 +32,6 @@ class Product():
             'value placeholder': self.vals_ph,
         }
 
-    def __delete_entry__(self, date: str) -> None:
-        """Delete entry from table by date."""
-        query = f"DELETE FROM {self.product} WHERE date='{date}'"
-        return Yields_DB().execute(query)
-
 
 class Argentina(Product):
     """Argentina Government Bonds."""
@@ -50,7 +41,7 @@ class Argentina(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '1 Year': idx[1][0], '4 Year': idx[1][1], '7 Year': idx[1][2],
@@ -82,7 +73,7 @@ class Australia(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '1 Year': idx[1][0], '2 Year': idx[1][1], '3 Year': idx[1][2],
@@ -131,7 +122,7 @@ class Austria(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '1 Year': idx[1][0], '2 Year': idx[1][1], '3 Year': idx[1][2],
@@ -182,7 +173,7 @@ class Bahrain(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '3 Month': idx[1][0], '6 Month': idx[1][1], '9 Month': idx[1][2],
@@ -217,7 +208,7 @@ class Bangledesh(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '3 Month': idx[1][0], '6 Month': idx[1][1], '1 Year': idx[1][2],
@@ -257,7 +248,7 @@ class Belgium(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '1 Month': idx[1][0], '3 Month': idx[1][1], '6 Month': idx[1][2],
@@ -308,7 +299,7 @@ class Botswana(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '6 Month': idx[1][0], '3 Year': idx[1][1], '5 Year': idx[1][2],
@@ -341,7 +332,7 @@ class Brazil(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '3 Month': idx[1][0], '6 Month': idx[1][1], '9 Month': idx[1][2],
@@ -382,7 +373,7 @@ class Bulgaria(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '1 Month': idx[1][0], '1 Year': idx[1][1], '2 Year': idx[1][2],
@@ -422,7 +413,7 @@ class Canada(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '1 Month': idx[1][0], '2 Month': idx[1][1], '3 Month': idx[1][2],
@@ -470,7 +461,7 @@ class Chile(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '1 Year': idx[1][0], '2 Year': idx[1][1], '3 Year': idx[1][2],
@@ -508,7 +499,7 @@ class China(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '1 Year': idx[1][0], '2 Year': idx[1][1], '3 Year': idx[1][2],
@@ -549,7 +540,7 @@ class Colombia(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '1 Year': idx[1][0], '4 Year': idx[1][1], '5 Year': idx[1][2],
@@ -584,7 +575,7 @@ class Crotia(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '1 Year': idx[1][0], '3 Year': idx[1][1], '5 Year': idx[1][2],
@@ -617,7 +608,7 @@ class Cyprus(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '2 Year': idx[1][0], '3 Year': idx[1][1], '5 Year': idx[1][2],
@@ -652,7 +643,7 @@ class Czech_Republic(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '1 Year': idx[1][0], '2 Year': idx[1][1], '3 Year': idx[1][2],
@@ -700,7 +691,7 @@ class Egypt(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '24h': idx[1][0], '3 Month': idx[1][1], '6 Month': idx[1][2],
@@ -743,7 +734,7 @@ class France(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '1 Month': idx[1][0], '3 Month': idx[1][1], '6 Month': idx[1][2],
@@ -801,7 +792,7 @@ class Germany(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '3 Month': idx[1][0], '6 Month': idx[1][1], '9 Month': idx[1][2],
@@ -855,7 +846,7 @@ class Greece(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '1 Month': idx[1][0], '3 Month': idx[1][1], '6 Month': idx[1][2],
@@ -894,7 +885,7 @@ class Hong_Kong(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '1 Week': idx[1][0], '1 Month': idx[1][1], '3 Month': idx[1][2],
@@ -940,7 +931,7 @@ class Hungary(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '3 Month': idx[1][0], '6 Month': idx[1][1], '1 Year': idx[1][2],
@@ -978,7 +969,7 @@ class Iceland(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '2 Year': idx[1][0], '5 Year': idx[1][1], '10 Year': idx[1][2],
@@ -1009,7 +1000,7 @@ class India(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '3 Month': idx[1][0], '6 Month': idx[1][1], '1 Year': idx[1][2],
@@ -1068,7 +1059,7 @@ class Indonesia(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '1 Month': idx[1][0], '3 Month': idx[1][1], '6 Month': idx[1][2],
@@ -1112,7 +1103,7 @@ class Ireland(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '3 Month': idx[1][0], '6 Month': idx[1][1], '1 Year': idx[1][2],
@@ -1161,7 +1152,7 @@ class Israel(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '1 Month': idx[1][0], '3 Month': idx[1][1], '6 Month': idx[1][2],
@@ -1205,7 +1196,7 @@ class Italy(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '1 Month': idx[1][0], '3 Month': idx[1][1], '6 Month': idx[1][2],
@@ -1261,7 +1252,7 @@ class Japan(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '1 Month': idx[1][0], '3 Month': idx[1][1], '6 Month': idx[1][2],
@@ -1317,7 +1308,7 @@ class Jordan(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '3 Month': idx[1][0], '6 Month': idx[1][1], '1 Year': idx[1][2],
@@ -1356,7 +1347,7 @@ class Kazakhstan(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '1 Year': idx[1][0], '2 Year': idx[1][1], '3 Year': idx[1][2],
@@ -1402,7 +1393,7 @@ class Kenya(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 'Overnight': idx[1][0], '3 Month': idx[1][1], '6 Month': idx[1][2],
@@ -1455,7 +1446,7 @@ class Malaysia(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '3 Week': idx[1][0], '3 Month': idx[1][1], '7 Month': idx[1][2],
@@ -1499,7 +1490,7 @@ class Malta(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '1 Month': idx[1][0], '3 Month': idx[1][1], '6 Month': idx[1][2],
@@ -1540,7 +1531,7 @@ class Mauritius(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '2 Month': idx[1][0], '4 Month': idx[1][1], '6 Month': idx[1][2],
@@ -1586,7 +1577,7 @@ class Mexico(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '1 Month': idx[1][0], '3 Month': idx[1][1], '6 Month': idx[1][2],
@@ -1632,7 +1623,7 @@ class Morocco(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '3 Month': idx[1][0], '6 Month': idx[1][1], '2 Year': idx[1][2],
@@ -1668,7 +1659,7 @@ class Namibia(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '3 Month': idx[1][0], '6 Month': idx[1][1], '9 Month': idx[1][2],
@@ -1709,7 +1700,7 @@ class Netherlands(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '1 Month': idx[1][0], '3 Month': idx[1][1], '6 Month': idx[1][2],
@@ -1762,7 +1753,7 @@ class New_Zealand(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '1 Month': idx[1][0], '2 Month': idx[1][1], '3 Month': idx[1][2],
@@ -1808,7 +1799,7 @@ class Nigeria(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '3 Month': idx[1][0], '6 Month': idx[1][1], '1 Year': idx[1][2],
@@ -1847,7 +1838,7 @@ class Norway(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '3 Month': idx[1][0], '6 Month': idx[1][1], '9 Month': idx[1][2],
@@ -1885,7 +1876,7 @@ class Pakistan(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '3 Month': idx[1][0], '6 Month': idx[1][1], '1 Year': idx[1][2],
@@ -1924,7 +1915,7 @@ class Peru(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '2 Year': idx[1][0], '5 Year': idx[1][1], '10 Year': idx[1][2],
@@ -1960,7 +1951,7 @@ class Philippines(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '1 Month': idx[1][0], '3 Month': idx[1][1], '6 Month': idx[1][2],
@@ -2004,7 +1995,7 @@ class Poland(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 'Overnight': idx[1][0], '1 Month': idx[1][1], '2 Month': idx[1][2],
@@ -2050,7 +2041,7 @@ class Portugal(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '3 Month': idx[1][0], '6 Month': idx[1][1], '1 Year': idx[1][2],
@@ -2101,7 +2092,7 @@ class Qatar(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '2 Year': idx[1][0], '3 Year': idx[1][1], '5 Year': idx[1][2],
@@ -2135,7 +2126,7 @@ class Romania(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '6 Month': idx[1][0], '1 Year': idx[1][1], '2 Year': idx[1][2],
@@ -2174,7 +2165,7 @@ class Russia(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 'Overnight': idx[1][0], '1 Week': idx[1][1], '2 Week': idx[1][2],
@@ -2225,7 +2216,7 @@ class Serbia(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '1 Year': idx[1][0], '2 Year': idx[1][1], '3 Year': idx[1][2],
@@ -2261,7 +2252,7 @@ class Singapore(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '1 Month': idx[1][0], '3 Month': idx[1][1], '6 Month': idx[1][2],
@@ -2304,7 +2295,7 @@ class Slovakia(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '2 Year': idx[1][0], '5 Year': idx[1][1], '6 Year': idx[1][2],
@@ -2347,7 +2338,7 @@ class Slovenia(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '1 Year': idx[1][0], '2 Year': idx[1][1], '3 Year': idx[1][2],
@@ -2390,7 +2381,7 @@ class South_Africa(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '3 Month': idx[1][0], '2 Year': idx[1][1], '5 Year': idx[1][2],
@@ -2429,7 +2420,7 @@ class South_Korea(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '1 Year': idx[1][0], '2 Year': idx[1][1], '3 Year': idx[1][2],
@@ -2470,7 +2461,7 @@ class Spain(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '1 Month': idx[1][0], '3 Month': idx[1][1], '6 Month': idx[1][2],
@@ -2526,7 +2517,7 @@ class Sri_Lanka(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '3 Month': idx[1][0], '6 Month': idx[1][1], '1 Year': idx[1][2],
@@ -2574,7 +2565,7 @@ class Switzerland(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 'Overnight': idx[1][0], '1 Week': idx[1][1], '1 Month': idx[1][2],
@@ -2633,7 +2624,7 @@ class Taiwan(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '2 Year': idx[1][0], '5 Year': idx[1][1], '10 Year': idx[1][2],
@@ -2667,7 +2658,7 @@ class Thailand(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '1 Year': idx[1][0], '2 Year': idx[1][1], '3 Year': idx[1][2],
@@ -2711,7 +2702,7 @@ class Turkey(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '3 Month': idx[1][0], '6 Month': idx[1][1], '9 Month': idx[1][2],
@@ -2750,7 +2741,7 @@ class Uganda(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '3 Month': idx[1][0], '6 Month': idx[1][1], '1 Year': idx[1][2],
@@ -2789,7 +2780,7 @@ class Ukraine(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '1 Year': idx[1][0], '2 Year': idx[1][1], '3 Year': idx[1][2],
@@ -2820,7 +2811,7 @@ class United_Kingdom(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '1 Month': idx[1][0], '3 Month': idx[1][1], '6 Month': idx[1][2],
@@ -2879,7 +2870,7 @@ class United_States(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '1 Month': idx[1][0], '3 Month': idx[1][1], '6 Month': idx[1][2],
@@ -2923,7 +2914,7 @@ class Vietnam(Product):
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
-        for idx in enumerate(self.fetch_data(query)):
+        for idx in enumerate(Yields_DB().fetch(query)):
             key = str(idx[1][-1])
             self.output[key] = {
                 '1 Year': idx[1][0], '2 Year': idx[1][1], '3 Year': idx[1][2],
