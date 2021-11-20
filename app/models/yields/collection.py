@@ -1,23 +1,19 @@
-from typing import Type
-
-import requests as req
-from bs4 import BeautifulSoup as bs
+from selenium import webdriver
 
 from app.models.yields.database import Yields_DB
-from app.util import tables
 
 
 class Meta:
-    def __init__(self, url: str, table_name: str, db_model: Type[Yields_DB]) -> None:
-        self.url = url
-        self.model = db_model()
+    def __init__(self) -> None:
+        PATH = f"{'/'.join(__file__.split('/')[:-3])}/util/chromedriver"
+        self.driver = webdriver.Chrome(PATH)
+        self.model = Yields_DB()
         self.dataset: list = []
-        self.table = tables.get_table(table_name)
 
-    def get_data(self) -> bs:
-        """Fetch data from webpage."""
-        return bs(req.get(self.url).text, "lxml")
+    def __close__(self) -> None:
+        """Close the web driver."""
+        self.driver.close()
 
     def add_to_db(self, query: str, data: list[tuple]) -> None:
-        """Add data to database."""
+        """Add collected data to database."""
         self.model.executemany(query, data)
