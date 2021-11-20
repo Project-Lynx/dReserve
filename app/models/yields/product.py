@@ -1,24 +1,26 @@
 from app.models.yields.database import Yields_DB
-from app.util import tables
 
 
 class Product():
     """Basic representation of a product"""
-    def __init__(self, product: str, data: list = []) -> None:
+    def __init__(self, product: str, data: list = [], columns: str = "") -> None:
         self.output: dict = {}
-        self.table = tables.get_table(product)
         self.product = product
         self.data = data
-
-    def export_info(self) -> dict:
-        """Export internal variables"""
-        return {
-            'table': self.table,
-        }
+        self.columns = columns
+        self.vals_ph = f'({(str("%s," * len(columns.split(",")))[:-1])})'
+        self.x_path_base = "/html/body/div[5]/section/"
+        self.collection_query = f"INSERT INTO {product} ({columns}) VALUES {self.vals_ph}"
 
     def fetch_data(self, query: list) -> tuple:
         """Get data from DB"""
         return Yields_DB().fetch(query, self.data)
+
+    def add_to_db_query(self) -> str:
+        """Output query to add collected data to db."""
+        print(self.columns)
+        print(self.vals_ph)
+        return self.collection_query
 
     def rate_to_dict(self, query: list) -> dict:
         """Convert tuple to hashmap"""
@@ -28,12 +30,23 @@ class Product():
             self.output[key] = idx[1][1]
         return self.output
 
+    def __internals__(self) -> dict:
+        """Output internals as dict."""
+        return {
+            'product': self.product, 'columns': self.columns,
+            'value placeholder': self.vals_ph,
+        }
+
+    def __delete_entry__(self, date: str) -> None:
+        """Delete entry from table by date."""
+        return Yields_DB().execute(f"DELETE FROM {self.product} WHERE date='{date}'")
+
 
 class Argentina(Product):
     """Argentina Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="ArgentinaGB", data=data)
-        self.columns = "1y,4y,7y,date"
+        columns = "1y,4y,7y,date"
+        super().__init__(product="ArgentinaGB", data=data, columns=columns)
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
@@ -42,28 +55,35 @@ class Argentina(Product):
             self.output[key] = {
                 '1 Year': idx[1][0], '4 Year': idx[1][1], '7 Year': idx[1][2],
             }
+        print(self.output)
         return self.output
+
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[1]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[1]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[1]/tbody/tr[3]/td[3]"]
 
     def create_table(self) -> None:
         """Create table for Argentina Gov Bonds in DB."""
-        query = """CREATE TABLE IF NOT EXISTS ArgentinaGB
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     1y varchar(7), 4y varchar(7), 7y varchar(7),
                     date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Australia(Product):
     """Australia Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="AustraliaGB", data=data)
-        self.columns = "1y,2y,3y,4y,5y,7y,8y,9y,10y,12y,15y,20y,30y,date"
+        columns = "1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,12y,15y,20y,30y,date"
+        super().__init__(product="AustraliaGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '1 Year': idx[1][0], '2 Year': idx[1][1], '3 Year': idx[1][2],
                 '4 Year': idx[1][3], '5 Year': idx[1][4], '6 Year': idx[1][5],
@@ -73,29 +93,46 @@ class Australia(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[2]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[2]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[2]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[2]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[2]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[2]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[2]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[2]/tbody/tr[8]/td[3]",
+                f"{self.x_path_base}table[2]/tbody/tr[9]/td[3]",
+                f"{self.x_path_base}table[2]/tbody/tr[10]/td[3]",
+                f"{self.x_path_base}table[2]/tbody/tr[11]/td[3]",
+                f"{self.x_path_base}table[2]/tbody/tr[12]/td[3]",
+                f"{self.x_path_base}table[2]/tbody/tr[13]/td[3]",
+                f"{self.x_path_base}table[2]/tbody/tr[14]/td[3]"]
+
     def create_table(self) -> None:
         """Create table for Australia Gov Bonds in DB."""
-        query = """CREATE TABLE IF NOT EXISTS AustraliaGB
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     1y varchar(7), 2y varchar(7), 3y varchar(7),
                     4y varchar(7), 5y varchar(7), 6y varchar(7),
                     7y varchar(7), 8y varchar(7), 9y varchar(7),
                     10y varchar(7), 12y varchar(7), 15y varchar(7),
                     20y varchar(7), 30y varchar(7), date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Austria(Product):
     """Austria Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="AustriaGB", data=data)
-        self.columns = "1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,15y,20y,25y,30y,40y,date"
+        columns = "1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,15y,20y,25y,30y,40y,date"
+        super().__init__(product="AustriaGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '1 Year': idx[1][0], '2 Year': idx[1][1], '3 Year': idx[1][2],
                 '4 Year': idx[1][3], '5 Year': idx[1][4], '6 Year': idx[1][5],
@@ -105,9 +142,27 @@ class Austria(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[3]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[3]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[3]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[3]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[3]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[3]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[3]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[3]/tbody/tr[8]/td[3]",
+                f"{self.x_path_base}table[3]/tbody/tr[9]/td[3]",
+                f"{self.x_path_base}table[3]/tbody/tr[10]/td[3]",
+                f"{self.x_path_base}table[3]/tbody/tr[11]/td[3]",
+                f"{self.x_path_base}table[3]/tbody/tr[12]/td[3]",
+                f"{self.x_path_base}table[3]/tbody/tr[13]/td[3]",
+                f"{self.x_path_base}table[3]/tbody/tr[14]/td[3]",
+                f"{self.x_path_base}table[3]/tbody/tr[15]/td[3]"]
+
     def create_table(self) -> None:
         """Create table for Austria Gov Bonds in DB."""
-        query = """CREATE TABLE IF NOT EXISTS AustriaGB
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     1y varchar(7), 2y varchar(7), 3y varchar(7),
                     4y varchar(7), 5y varchar(7), 6y varchar(7),
@@ -115,43 +170,55 @@ class Austria(Product):
                     10y varchar(7), 15y varchar(7), 20y varchar(7),
                     25y varchar(7), 30y varchar(7), 40y varchar(7),
                     date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Bahrain(Product):
     """Bahrain Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="BahrainGB", data=data)
-        self.columns = "3m,6m,9m,1y,2y,5y,date"
+        columns = "3m,6m,9m,1y,2y,5y,date"
+        super().__init__(product="BahrainGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '3 Month': idx[1][0], '6 Month': idx[1][1], '9 Month': idx[1][2],
                 '1 Year': idx[1][3], '2 Year': idx[1][4], '5 Year': idx[1][5],
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[4]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[4]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[4]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[4]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[4]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[4]/tbody/tr[6]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS AustriaGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     3m varchar(7), 6m varchar(7), 9m varchar(7),
                     1y varchar(7), 2y varchar(7), 5y varchar(7),
                     date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Bangledesh(Product):
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="BahrainGB", data=data)
-        self.columns = "3m,6m,1y,2y,5y,10y,15y,20y,date"
+        columns = "3m,6m,1y,2y,5y,10y,15y,20y,date"
+        super().__init__(product="BangledeshGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '3 Month': idx[1][0], '6 Month': idx[1][1], '1 Year': idx[1][2],
                 '2 Year': idx[1][3], '5 Year': idx[1][4], '10 Year': idx[1][5],
@@ -159,35 +226,69 @@ class Bangledesh(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[5]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[5]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[5]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[5]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[5]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[5]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[5]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[5]/tbody/tr[8]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS AustriaGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     3m varchar(7), 6m varchar(7), 1y varchar(7),
                     2y varchar(7), 5y varchar(7), 10y varchar(7),
                     15y varchar(7), 20y varchar(7), date DATE,
                     year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Belgium(Product):
     """Belgium Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="BelgiumGB", data=data)
-        self.columns = "1m,3m,6m,9m,1y,2y,3y,4y,5y,6y,8y,9y,10y,15y,20y,date"
+        columns = "1m,3m,6m,9m,1y,2y,3y,4y,5y,6y,8y,9y,10y,15y,20y,date"
+        super().__init__(product="BelgiumGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
-                '3 Month': idx[1][0], '6 Month': idx[1][1], '1 Year': idx[1][2],
-                '2 Year': idx[1][3], '5 Year': idx[1][4], '10 Year': idx[1][5],
-                '15 Year': idx[1][6], '20 Year': idx[1][7],
+                '1 Month': idx[1][0], '3 Month': idx[1][1], '6 Month': idx[1][2],
+                '9 Month': idx[1][3], '1 Year': idx[1][4], '2 Year': idx[1][5],
+                '3 Year': idx[1][6], '4 Year': idx[1][7], '5 Year': idx[1][8],
+                '6 Year': idx[1][9], '8 Year': idx[1][10], '9 Year': idx[1][11],
+                '10 Year': idx[1][12], '15 Year': idx[1][13], '20 Year': idx[1][14],
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[6]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[6]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[6]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[6]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[6]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[6]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[6]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[6]/tbody/tr[8]/td[3]",
+                f"{self.x_path_base}table[6]/tbody/tr[9]/td[3]",
+                f"{self.x_path_base}table[6]/tbody/tr[10]/td[3]",
+                f"{self.x_path_base}table[6]/tbody/tr[11]/td[3]",
+                f"{self.x_path_base}table[6]/tbody/tr[12]/td[3]",
+                f"{self.x_path_base}table[6]/tbody/tr[13]/td[3]",
+                f"{self.x_path_base}table[6]/tbody/tr[14]/td[3]",
+                f"{self.x_path_base}table[6]/tbody/tr[15]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS BelgiumGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     1m varchar(7), 3m varchar(7), 6m varchar(7),
                     9m varchar(7), 1y varchar(7), 2y varchar(7),
@@ -195,43 +296,53 @@ class Belgium(Product):
                     6y varchar(7), 8y varchar(7), 9y varchar(7),
                     10y varchar(7), 15y varchar(7), 20y varchar(7),
                     date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Botswana(Product):
     """Botswana Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="BotswanaGB", data=data)
-        self.columns = "6m,3y,5y,20y,date"
+        columns = "6m,3y,5y,20y,date"
+        super().__init__(product="BotswanaGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '6 Month': idx[1][0], '3 Year': idx[1][1], '5 Year': idx[1][2],
                 '20 Year': idx[1][3],
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[7]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[7]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[7]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[7]/tbody/tr[4]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS BotswanaGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     6m varchar(7), 3y varchar(7), 5y varchar(7),
                     20y varchar(7), date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Brazil(Product):
     """Brazil Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="BrazilGB", data=data)
-        self.columns = "3m,6m,9m,1y,2y,3y,5y,8y,10y,date"
+        columns = "3m,6m,9m,1y,2y,3y,5y,8y,10y,date"
+        super().__init__(product="BrazilGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '3 Month': idx[1][0], '6 Month': idx[1][1], '9 Month': idx[1][2],
                 '1 Year': idx[1][3], '2 Year': idx[1][4], '3 Year': idx[1][5],
@@ -239,26 +350,40 @@ class Brazil(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[8]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[8]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[8]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[8]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[8]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[8]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[8]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[8]/tbody/tr[8]/td[3]",
+                f"{self.x_path_base}table[8]/tbody/tr[9]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS BrazilGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     3m varchar(7), 6m varchar(7), 9m varchar(7),
                     1y varchar(7), 2y varchar(7), 3y varchar(7),
                     5y varchar(7), 8y varchar(7), 10y varchar(7),
                     date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Bulgaria(Product):
     """Bulgaria Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="BulgariaGB", data=data)
-        self.columns = "1m,1y,2y,3y,4y,5y,7y,10y,date"
+        columns = "1m,1y,2y,3y,4y,5y,7y,10y,date"
+        super().__init__(product="BulgariaGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '1 Month': idx[1][0], '1 Year': idx[1][1], '2 Year': idx[1][2],
                 '3 Year': idx[1][3], '4 Year': idx[1][4], '5 Year': idx[1][5],
@@ -266,26 +391,39 @@ class Bulgaria(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[9]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[9]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[9]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[9]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[9]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[9]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[9]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[9]/tbody/tr[8]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS BulgariaGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     1m varchar(7), 1y varchar(7), 2y varchar(7),
                     3y varchar(7), 4y varchar(7), 5y varchar(7),
                     7y varchar(7), 10y varchar(7), date DATE,
                     year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Canada(Product):
     """Canadian Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="CanadaGB", data=data)
-        self.columns = "1m,2m,3m,6m,1y,2y,3y,4y,5y,7y,10y,20y,30y,date"
+        columns = "1m,2m,3m,6m,1y,2y,3y,4y,5y,7y,10y,20y,30y,date"
+        super().__init__(product="CanadaGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '1 Month': idx[1][0], '2 Month': idx[1][1], '3 Month': idx[1][2],
                 '6 Month': idx[1][3], '1 Year': idx[1][4], '2 Year': idx[1][5],
@@ -295,27 +433,45 @@ class Canada(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[10]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[10]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[10]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[10]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[10]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[10]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[10]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[10]/tbody/tr[8]/td[3]",
+                f"{self.x_path_base}table[10]/tbody/tr[9]/td[3]",
+                f"{self.x_path_base}table[10]/tbody/tr[10]/td[3]",
+                f"{self.x_path_base}table[10]/tbody/tr[11]/td[3]",
+                f"{self.x_path_base}table[10]/tbody/tr[12]/td[3]",
+                f"{self.x_path_base}table[10]/tbody/tr[13]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS CanadaGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     1m varchar(7), 2m varchar(7), 3m varchar(7),
                     6m varchar(7), 1y varchar(7), 2y varchar(7),
                     3y varchar(7), 4y varchar(7), 5y varchar(7),
                     7y varchar(7), 10y varchar(7), 20y varchar(7),
                     30y varchar(7), date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Chile(Product):
     """Chilian Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="ChileGB", data=data)
-        self.columns = "1y,2y,3y,4y,5y,8y,10y,date"
+        columns = "1y,2y,3y,4y,5y,8y,10y,date"
+        super().__init__(product="ChileGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '1 Year': idx[1][0], '2 Year': idx[1][1], '3 Year': idx[1][2],
                 '4 Year': idx[1][3], '5 Year': idx[1][4], '8 Year': idx[1][5],
@@ -323,8 +479,19 @@ class Chile(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[11]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[11]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[11]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[11]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[11]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[11]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[11]/tbody/tr[7]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS ChileGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     1y varchar(7), 2y varchar(7), 3y varchar(7),
                     4y varchar(7), 5y varchar(7), 8y varchar(7),
@@ -336,12 +503,13 @@ class Chile(Product):
 class China(Product):
     """Chinese Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="ChinaGB", data=data)
-        self.columns = "1y,2y,3y,5y,7y,10y,15y,20y,30y,date"
+        columns = "1y,2y,3y,5y,7y,10y,15y,20y,30y,date"
+        super().__init__(product="ChinaGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '1 Year': idx[1][0], '2 Year': idx[1][1], '3 Year': idx[1][2],
                 '5 Year': idx[1][3], '7 Year': idx[1][4], '10 Year': idx[1][5],
@@ -349,100 +517,143 @@ class China(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[12]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[12]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[12]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[12]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[12]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[12]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[12]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[12]/tbody/tr[8]/td[3]",
+                f"{self.x_path_base}table[12]/tbody/tr[9]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS ChinaGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     1y varchar(7), 2y varchar(7), 3y varchar(7),
                     5y varchar(7), 7y varchar(7), 10y varchar(7),
                     15y varchar(7), 20y varchar(7), 30y varchar(7),
                     date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Colombia(Product):
     """Colombian Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="ColombiaGB", data=data)
-        self.columns = "1y,4y,5y,10y,15y,date"
+        columns = "1y,4y,5y,10y,15y,date"
+        super().__init__(product="ColombiaGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '1 Year': idx[1][0], '4 Year': idx[1][1], '5 Year': idx[1][2],
                 '10 Year': idx[1][3], '15 Year': idx[1][4],
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[13]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[13]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[13]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[13]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[13]/tbody/tr[5]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS ColombiaGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     1y varchar(7), 4y varchar(7), 5y varchar(7),
                     10y varchar(7), 15y varchar(7), date DATE,
                     year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Crotia(Product):
     """Croatian Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="CroatiaGB", data=data)
-        self.columns = "1y,3y,5y,10y,date"
+        columns = "1y,3y,5y,10y,date"
+        super().__init__(product="CroatiaGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '1 Year': idx[1][0], '3 Year': idx[1][1], '5 Year': idx[1][2],
                 '10 Year': idx[1][3],
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[14]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[14]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[14]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[14]/tbody/tr[4]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS CrotiaGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     1y varchar(7), 3y varchar(7), 5y varchar(7),
                     10y varchar(7), date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Cyprus(Product):
     """Cyprus Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="CyprusGB", data=data)
-        self.columns = "1y,3y,5y,7y,10y,date"
+        columns = "1y,3y,5y,7y,10y,date"
+        super().__init__(product="CyprusGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '2 Year': idx[1][0], '3 Year': idx[1][1], '5 Year': idx[1][2],
                 '7 Year': idx[1][3], '10 Year': idx[1][4],
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[15]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[15]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[15]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[15]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[15]/tbody/tr[5]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS CyprusGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     1y varchar(7), 3y varchar(7), 5y varchar(7),
                     7y varchar(7), 10y varchar(7), date DATE,
                     year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Czech_Republic(Product):
     """Czech Republic Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="CzechRepublicGB", data=data)
-        self.columns = "1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,15y,20y,50y,date"
+        columns = "1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,15y,20y,50y,date"
+        super().__init__(product="CzechRepublicGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '1 Year': idx[1][0], '2 Year': idx[1][1], '3 Year': idx[1][2],
                 '4 Year': idx[1][3], '5 Year': idx[1][4], '6 Year': idx[1][5],
@@ -452,55 +663,88 @@ class Czech_Republic(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[16]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[16]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[16]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[16]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[16]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[16]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[16]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[16]/tbody/tr[8]/td[3]",
+                f"{self.x_path_base}table[16]/tbody/tr[9]/td[3]",
+                f"{self.x_path_base}table[16]/tbody/tr[10]/td[3]",
+                f"{self.x_path_base}table[16]/tbody/tr[11]/td[3]",
+                f"{self.x_path_base}table[16]/tbody/tr[12]/td[3]",
+                f"{self.x_path_base}table[16]/tbody/tr[13]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS CzechRepublicGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     1y varchar(7), 2y varchar(7), 3y varchar(7),
                     4y varchar(7), 5y varchar(7), 6y varchar(7),
                     7y varchar(7), 8y varchar(7), 9y varchar(7),
                     10y varchar(7), 15y varchar(7), 20y varchar(7),
                     50y varchar(7), date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Egypt(Product):
     """Egyptian Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="EgyptGB", data=data)
-        self.columns = "on,3m,6m,9m,1y,2y,3y,5y,7y,10y,date"
+        columns = "24h,3m,6m,9m,1y,2y,3y,5y,7y,10y,date"
+        super().__init__(product="EgyptGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
-                'Overnight': idx[1][0], '3 Month': idx[1][1], '6 Month': idx[1][2],
+                '24h': idx[1][0], '3 Month': idx[1][1], '6 Month': idx[1][2],
                 '9 Month': idx[1][3], '1 Year': idx[1][4], '2 Year': idx[1][5],
                 '3 Year': idx[1][6], '5 Year': idx[1][7], '7 Year': idx[1][8],
                 '10 Year': idx[1][9],
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[17]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[17]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[17]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[17]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[17]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[17]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[17]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[17]/tbody/tr[8]/td[3]",
+                f"{self.x_path_base}table[17]/tbody/tr[9]/td[3]",
+                f"{self.x_path_base}table[17]/tbody/tr[10]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS EgyptGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                    on varchar(7), 3m varchar(7), 6m varchar(7),
+                    24h varchar(7), 3m varchar(7), 6m varchar(7),
                     9m varchar(7), 1y varchar(7), 2y varchar(7),
                     3y varchar(7), 5y varchar(7), 7y varchar(7),
                     10y varchar(7), date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class France(Product):
     """French Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="FranceGB", data=data)
-        self.columns = "1m,3m,6m,9m,1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,15y,20y,25y,30y,50y,date"
+        columns = "1m,3m,6m,9m,1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,15y,20y,25y,30y,50y,date"
+        super().__init__(product="FranceGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '1 Month': idx[1][0], '3 Month': idx[1][1], '6 Month': idx[1][2],
                 '9 Month': idx[1][3], '1 Year': idx[1][4], '2 Year': idx[1][5],
@@ -512,8 +756,31 @@ class France(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[18]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[18]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[18]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[18]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[18]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[18]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[18]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[18]/tbody/tr[8]/td[3]",
+                f"{self.x_path_base}table[18]/tbody/tr[9]/td[3]",
+                f"{self.x_path_base}table[18]/tbody/tr[10]/td[3]",
+                f"{self.x_path_base}table[18]/tbody/tr[11]/td[3]",
+                f"{self.x_path_base}table[18]/tbody/tr[12]/td[3]",
+                f"{self.x_path_base}table[18]/tbody/tr[13]/td[3]",
+                f"{self.x_path_base}table[18]/tbody/tr[14]/td[3]",
+                f"{self.x_path_base}table[18]/tbody/tr[15]/td[3]",
+                f"{self.x_path_base}table[18]/tbody/tr[16]/td[3]",
+                f"{self.x_path_base}table[18]/tbody/tr[17]/td[3]",
+                f"{self.x_path_base}table[18]/tbody/tr[18]/td[3]",
+                f"{self.x_path_base}table[18]/tbody/tr[19]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS FranceGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     1m varchar(7), 3m varchar(7), 6m varchar(7),
                     9m varchar(7), 1y varchar(7), 2y varchar(7),
@@ -522,19 +789,20 @@ class France(Product):
                     9y varchar(7), 10y varchar(7), 15y varchar(7),
                     20y varchar(7), 25y varchar(7), 30y varchar(7),
                     50y varchar(7), date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Germany(Product):
     """German Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="GermanGB", data=data)
-        self.columns = "3m,6m,9m,1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,15y,20y,25y,30y,date"
+        columns = "3m,6m,9m,1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,15y,20y,25y,30y,date"
+        super().__init__(product="GermanyGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '3 Month': idx[1][0], '6 Month': idx[1][1], '9 Month': idx[1][2],
                 '1 Year': idx[1][3], '2 Year': idx[1][4], '3 Year': idx[1][5],
@@ -545,8 +813,29 @@ class Germany(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[19]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[19]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[19]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[19]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[19]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[19]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[19]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[19]/tbody/tr[8]/td[3]",
+                f"{self.x_path_base}table[19]/tbody/tr[9]/td[3]",
+                f"{self.x_path_base}table[19]/tbody/tr[10]/td[3]",
+                f"{self.x_path_base}table[19]/tbody/tr[11]/td[3]",
+                f"{self.x_path_base}table[19]/tbody/tr[12]/td[3]",
+                f"{self.x_path_base}table[19]/tbody/tr[13]/td[3]",
+                f"{self.x_path_base}table[19]/tbody/tr[14]/td[3]",
+                f"{self.x_path_base}table[19]/tbody/tr[15]/td[3]",
+                f"{self.x_path_base}table[19]/tbody/tr[16]/td[3]",
+                f"{self.x_path_base}table[19]/tbody/tr[17]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS GermanGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     3m varchar(7), 6m varchar(7), 9m varchar(7),
                     1y varchar(7), 2y varchar(7), 3y varchar(7),
@@ -554,19 +843,20 @@ class Germany(Product):
                     7y varchar(7), 8y varchar(7), 9y varchar(7),
                     10y varchar(7), 15y varchar(7), 20y varchar(7),
                     25y varchar(7), 30y varchar(7), date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Greece(Product):
     """Greek Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="GreeceGB", data=data)
-        self.columns = "1m,3m,6m,5y,10y,15y,20y,25y,date"
+        columns = "1m,3m,6m,5y,10y,15y,20y,25y,date"
+        super().__init__(product="GreeceGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '1 Month': idx[1][0], '3 Month': idx[1][1], '6 Month': idx[1][2],
                 '5 Year': idx[1][3], '10 Year': idx[1][4], '15 Year': idx[1][5],
@@ -574,25 +864,38 @@ class Greece(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[20]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[20]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[20]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[20]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[20]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[20]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[20]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[20]/tbody/tr[8]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS GreeceGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     1m varchar(7), 3m varchar(7), 6m varchar(7),
                     5y varchar(7), 10y varchar(7), 15y varchar(7),
                     20y varchar(7), 25y varchar(7), date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Hong_Kong(Product):
     """Hong Kong Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="HongKongGB", data=data)
-        self.columns = "1w,1m,3m,6m,9m,1y,2y,3y,5y,7y,10y,15y,date"
+        columns = "1w,1m,3m,6m,9m,1y,2y,3y,5y,7y,10y,15y,date"
+        super().__init__(product="HongKongGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '1 Week': idx[1][0], '1 Month': idx[1][1], '3 Month': idx[1][2],
                 '6 Month': idx[1][3], '9 Month': idx[1][4], '1 Year': idx[1][5],
@@ -601,27 +904,44 @@ class Hong_Kong(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[21]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[21]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[21]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[21]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[21]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[21]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[21]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[21]/tbody/tr[8]/td[3]",
+                f"{self.x_path_base}table[21]/tbody/tr[9]/td[3]",
+                f"{self.x_path_base}table[21]/tbody/tr[10]/td[3]",
+                f"{self.x_path_base}table[21]/tbody/tr[11]/td[3]",
+                f"{self.x_path_base}table[21]/tbody/tr[12]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS HongKongGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     1w varchar(7), 1m varchar(7), 3m varchar(7),
                     6m varchar(7), 9m varchar(7), 1y varchar(7),
-                    2y varchar(7), 3y varchar(7), 5y varhcar(7),
-                    7y varhcar(7), 10y varhcar(7), 15y varhcar(7),
+                    2y varchar(7), 3y varchar(7), 5y varchar(7),
+                    7y varchar(7), 10y varchar(7), 15y varchar(7),
                     date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Hungary(Product):
     """Hungarian Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="HungaryGB", data=data)
-        self.columns = "3m,6m,1y,3y,5y,10y,15y,date"
+        columns = "3m,6m,1y,3y,5y,10y,15y,date"
+        super().__init__(product="HungaryGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '3 Month': idx[1][0], '6 Month': idx[1][1], '1 Year': idx[1][2],
                 '3 year': idx[1][3], '5 Year': idx[1][4], '10 Year': idx[1][5],
@@ -629,48 +949,68 @@ class Hungary(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[22]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[22]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[22]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[22]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[22]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[22]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[22]/tbody/tr[7]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS HungaryGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     3m varchar(7), 6m varchar(7), 1y varchar(7),
                     3y varchar(7), 5y varchar(7), 10y varchar(7),
-                    15y varhcar(7), date DATE, year YEAR)
-                """
+                    15y varchar(7), date DATE, year YEAR)
+                 """
         Yields_DB().create_table(query)
 
 
 class Iceland(Product):
     """Iceland Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="IcelandGB", data=data)
-        self.columns = "2y,5y,10y,date"
+        columns = "2y,5y,10y,date"
+        super().__init__(product="IcelandGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '2 Year': idx[1][0], '5 Year': idx[1][1], '10 Year': idx[1][2],
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[23]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[23]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[23]/tbody/tr[3]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS IcelandGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     2y varchar(7), 5y varchar(7), 10y varchar(7),
                     date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class India(Product):
     """India Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="IndiaGB", data=data)
-        self.columns = "3m,6m,1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,11y,12y,13y,14y,15y,19y,24y,30y,date"
+        columns = columns = "3m,6m,1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,11y,12y,13y,14y,15y,19y,24y,30y,date"
+        super().__init__(product="IndiaGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '3 Month': idx[1][0], '6 Month': idx[1][1], '1 Year': idx[1][2],
                 '2 Year': idx[1][3], '3 Year': idx[1][4], '4 Year': idx[1][5],
@@ -682,8 +1022,32 @@ class India(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[24]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[24]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[24]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[24]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[24]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[24]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[24]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[24]/tbody/tr[8]/td[3]",
+                f"{self.x_path_base}table[24]/tbody/tr[9]/td[3]",
+                f"{self.x_path_base}table[24]/tbody/tr[10]/td[3]",
+                f"{self.x_path_base}table[24]/tbody/tr[11]/td[3]",
+                f"{self.x_path_base}table[24]/tbody/tr[12]/td[3]",
+                f"{self.x_path_base}table[24]/tbody/tr[13]/td[3]",
+                f"{self.x_path_base}table[24]/tbody/tr[14]/td[3]",
+                f"{self.x_path_base}table[24]/tbody/tr[15]/td[3]",
+                f"{self.x_path_base}table[24]/tbody/tr[16]/td[3]",
+                f"{self.x_path_base}table[24]/tbody/tr[17]/td[3]",
+                f"{self.x_path_base}table[24]/tbody/tr[18]/td[3]",
+                f"{self.x_path_base}table[24]/tbody/tr[19]/td[3]",
+                f"{self.x_path_base}table[24]/tbody/tr[20]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS IndiaGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     3m varchar(7), 6m varchar(7), 1y varchar(7),
                     2y varchar(7), 3y varchar(7), 4y varchar(7),
@@ -692,19 +1056,20 @@ class India(Product):
                     11y varchar(7), 12y varchar(7), 13y varchar(7),
                     14y varchar(7), 15y varchar(7), 19y varchar(7),
                     24y varchar(7), 30y varchar(7), date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Indonesia(Product):
     """Indonesian Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="IndonesiaGB", data=data)
-        self.columns = "1m,3m,6m,1y,3y,5y,10y,15y,20y,25y,30y,date"
+        columns = "1m,3m,6m,1y,3y,5y,10y,15y,20y,25y,30y,date"
+        super().__init__(product="IndonesiaGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '1 Month': idx[1][0], '3 Month': idx[1][1], '6 Month': idx[1][2],
                 '1 Year': idx[1][3], '3 Year': idx[1][4], '5 Year': idx[1][5],
@@ -713,26 +1078,42 @@ class Indonesia(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[25]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[25]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[25]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[25]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[25]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[25]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[25]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[25]/tbody/tr[8]/td[3]",
+                f"{self.x_path_base}table[25]/tbody/tr[9]/td[3]",
+                f"{self.x_path_base}table[25]/tbody/tr[10]/td[3]",
+                f"{self.x_path_base}table[25]/tbody/tr[11]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS IndonesiaGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     1m varchar(7), 3m varchar(7), 6m varchar(7),
                     1y varchar(7), 3y varchar(7), 5y varchar(7),
                     10y varchar(7), 15y varchar(7), 20y varchar(7),
                     25y varchar(7), 30y varchar(7), date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Ireland(Product):
     """Ireland Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="IrelandGB", data=data)
-        self.columns = "3m,6m,1y,3y,4y,5y,6y,7y,8y,10y,15y,20y,30y,date"
+        columns = "3m,6m,1y,3y,4y,5y,6y,7y,8y,10y,15y,20y,30y,date"
+        super().__init__(product="IrelandGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '3 Month': idx[1][0], '6 Month': idx[1][1], '1 Year': idx[1][2],
                 '3 Year': idx[1][3], '4 Year': idx[1][4], '5 Year': idx[1][5],
@@ -742,8 +1123,25 @@ class Ireland(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[26]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[26]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[26]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[26]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[26]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[26]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[26]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[26]/tbody/tr[8]/td[3]",
+                f"{self.x_path_base}table[26]/tbody/tr[9]/td[3]",
+                f"{self.x_path_base}table[26]/tbody/tr[10]/td[3]",
+                f"{self.x_path_base}table[26]/tbody/tr[11]/td[3]",
+                f"{self.x_path_base}table[26]/tbody/tr[12]/td[3]",
+                f"{self.x_path_base}table[26]/tbody/tr[13]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS IrelandGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     3m varchar(7), 6m varchar(7), 1y varchar(7),
                     3y varchar(7), 4y varchar(7), 5y varchar(7),
@@ -757,12 +1155,14 @@ class Ireland(Product):
 class Israel(Product):
     """Israeli Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="IsraelGB", data=data)
-        self.columns = "1m,3m,6m,9m,1y,2y,3y,5y,10y,30y,date"
+        table = "IsraelGB"
+        columns = "1m,3m,6m,9m,1y,2y,3y,5y,10y,30y,date"
+        super().__init__(product=table, data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '1 Month': idx[1][0], '3 Month': idx[1][1], '6 Month': idx[1][2],
                 '9 Month': idx[1][3], '1 Year': idx[1][4], '2 Year': idx[1][5],
@@ -771,26 +1171,42 @@ class Israel(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[27]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[27]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[27]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[27]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[27]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[27]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[27]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[27]/tbody/tr[8]/td[3]",
+                f"{self.x_path_base}table[27]/tbody/tr[9]/td[3]",
+                f"{self.x_path_base}table[27]/tbody/tr[10]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS IsraelGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     1m varchar(7), 3m varchar(7), 6m varchar(7),
                     9m varchar(7), 1y varchar(7), 2y varchar(7),
                     3y varchar(7), 5y varchar(7), 10y varchar(7),
                     30y varchar(7), date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Italy(Product):
     """Italian Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="ItalyGB", data=data)
-        self.columns = "1m,3m,6m,9m,1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,15y,20y,30y,50y,date"
+        table = "ItalyGB"
+        columns = "1m,3m,6m,9m,1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,15y,20y,30y,50y,date"
+        super().__init__(product=table, data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '1 Month': idx[1][0], '3 Month': idx[1][1], '6 Month': idx[1][2],
                 '9 Month': idx[1][3], '1 Year': idx[1][4], '2 Year': idx[1][5],
@@ -801,8 +1217,30 @@ class Italy(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[28]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[28]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[28]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[28]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[28]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[28]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[28]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[28]/tbody/tr[8]/td[3]",
+                f"{self.x_path_base}table[28]/tbody/tr[9]/td[3]",
+                f"{self.x_path_base}table[28]/tbody/tr[10]/td[3]",
+                f"{self.x_path_base}table[28]/tbody/tr[11]/td[3]",
+                f"{self.x_path_base}table[28]/tbody/tr[12]/td[3]",
+                f"{self.x_path_base}table[28]/tbody/tr[13]/td[3]",
+                f"{self.x_path_base}table[28]/tbody/tr[14]/td[3]",
+                f"{self.x_path_base}table[28]/tbody/tr[15]/td[3]",
+                f"{self.x_path_base}table[28]/tbody/tr[16]/td[3]",
+                f"{self.x_path_base}table[28]/tbody/tr[17]/td[3]",
+                f"{self.x_path_base}table[28]/tbody/tr[18]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS ItalyGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     1m varchar(7), 3m varchar(7), 6m varchar(7),
                     9m varchar(7), 1y varchar(7), 2y varchar(7),
@@ -811,19 +1249,20 @@ class Italy(Product):
                     9y varchar(7), 10y varchar(7), 15y varchar(7),
                     20y varchar(7), 30y varchar(7), 50y varchar(7),
                     date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Japan(Product):
     """Japanese Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="JapanGB", data=data)
-        self.columns = "1m,3m,6m,9m,1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,15y,20y,30y,40y,date"
+        columns = "1m,3m,6m,9m,1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,15y,20y,30y,40y,date"
+        super().__init__(product="JapanGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '1 Month': idx[1][0], '3 Month': idx[1][1], '6 Month': idx[1][2],
                 '9 Month': idx[1][3], '1 Year': idx[1][4], '2 Year': idx[1][5],
@@ -834,7 +1273,29 @@ class Japan(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[29]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[29]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[29]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[29]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[29]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[29]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[29]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[29]/tbody/tr[8]/td[3]",
+                f"{self.x_path_base}table[29]/tbody/tr[9]/td[3]",
+                f"{self.x_path_base}table[29]/tbody/tr[10]/td[3]",
+                f"{self.x_path_base}table[29]/tbody/tr[11]/td[3]",
+                f"{self.x_path_base}table[29]/tbody/tr[12]/td[3]",
+                f"{self.x_path_base}table[29]/tbody/tr[13]/td[3]",
+                f"{self.x_path_base}table[29]/tbody/tr[14]/td[3]",
+                f"{self.x_path_base}table[29]/tbody/tr[15]/td[3]",
+                f"{self.x_path_base}table[29]/tbody/tr[16]/td[3]",
+                f"{self.x_path_base}table[29]/tbody/tr[17]/td[3]",
+                f"{self.x_path_base}table[29]/tbody/tr[18]/td[3]"]
+
     def create_table(self) -> None:
+        """Create table in database if not already exits."""
         query = """CREATE TABLE IF NOT EXISTS JapanGB
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     1m varchar(7), 3m varchar(7), 6m varchar(7),
@@ -851,12 +1312,13 @@ class Japan(Product):
 class Jordan(Product):
     """Jordan Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="JordanGB", data=data)
-        self.columns = "3m,6m,1y,2y,3y,5y,7y,10y,date"
+        columns = "3m,6m,1y,2y,3y,5y,7y,10y,date"
+        super().__init__(product="JordanGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '3 Month': idx[1][0], '6 Month': idx[1][1], '1 Year': idx[1][2],
                 '2 Year': idx[1][3], '3 Year': idx[1][4], '5 Year': idx[1][5],
@@ -864,7 +1326,19 @@ class Jordan(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[30]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[30]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[30]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[30]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[30]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[30]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[30]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[30]/tbody/tr[8]/td[3]"]
+
     def create_table(self) -> None:
+        """Create table in database if not already exits."""
         query = """CREATE TABLE IF NOT EXISTS JordanGB
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     3m varchar(7), 6m varchar(7), 1y varchar(7),
@@ -877,12 +1351,13 @@ class Jordan(Product):
 class Kazakhstan(Product):
     """Kazakhstan Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="KazakhstanGB", data=data)
-        self.columns = "1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,15y,25y,date"
+        columns = "1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,15y,25y,date"
+        super().__init__(product="KazakhstanGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '1 Year': idx[1][0], '2 Year': idx[1][1], '3 Year': idx[1][2],
                 '4 Year': idx[1][3], '5 Year': idx[1][4], '6 Year': idx[1][5],
@@ -891,15 +1366,30 @@ class Kazakhstan(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[31]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[31]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[31]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[31]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[31]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[31]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[31]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[31]/tbody/tr[8]/td[3]",
+                f"{self.x_path_base}table[31]/tbody/tr[9]/td[3]",
+                f"{self.x_path_base}table[31]/tbody/tr[10]/td[3]",
+                f"{self.x_path_base}table[31]/tbody/tr[11]/td[3]",
+                f"{self.x_path_base}table[31]/tbody/tr[12]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS KazakhstanGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     1y varchar(7), 2y varchar(7), 3y varchar(7),
                     4y varchar(7), 5y varchar(7), 6y varchar(7),
-                    3y varchar(7), 4y varchar(7), 5y varchar(7),
-                    6y varchar(7), 7y varchar(7), 8y varchar(7),
-                    9y varchar(7), 10y varchar(7), 15y varchar(7),
-                    25y varchar(7), date DATE, year YEAR)
+                    7y varchar(7), 8y varchar(7), 9y varchar(7),
+                    10y varchar(7), 15y varchar(7), 25y varchar(7),
+                    date DATE, year YEAR)
                 """
         Yields_DB().create_table(query)
 
@@ -907,12 +1397,13 @@ class Kazakhstan(Product):
 class Kenya(Product):
     """Kenya Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="KenyaGB", data=data)
-        self.columns = "on,3m,6m,1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,15y,20y,25y,date"
+        columns = "24h,3m,6m,1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,15y,20y,25y,date"
+        super().__init__(product="KenyaGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 'Overnight': idx[1][0], '3 Month': idx[1][1], '6 Month': idx[1][2],
                 '1 Year': idx[1][3], '2 Year': idx[1][4], '3 Year': idx[1][5],
@@ -923,28 +1414,49 @@ class Kenya(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[32]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[32]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[32]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[32]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[32]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[32]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[32]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[32]/tbody/tr[8]/td[3]",
+                f"{self.x_path_base}table[32]/tbody/tr[9]/td[3]",
+                f"{self.x_path_base}table[32]/tbody/tr[10]/td[3]",
+                f"{self.x_path_base}table[32]/tbody/tr[11]/td[3]",
+                f"{self.x_path_base}table[32]/tbody/tr[12]/td[3]",
+                f"{self.x_path_base}table[32]/tbody/tr[13]/td[3]",
+                f"{self.x_path_base}table[32]/tbody/tr[14]/td[3]",
+                f"{self.x_path_base}table[32]/tbody/tr[15]/td[3]",
+                f"{self.x_path_base}table[32]/tbody/tr[16]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS KenyaGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                    on varchar(7), 3m varchar(7), 6m varchar(7),
+                    24h varchar(7), 3m varchar(7), 6m varchar(7),
                     1y varchar(7), 2y varchar(7), 3y varchar(7),
                     4y varchar(7), 5y varchar(7), 6y varchar(7),
                     7y varchar(7), 8y varchar(7), 9y varchar(7),
                     10y varchar(7), 15y varchar(7), 20y varchar(7),
                     25y varchar(7), date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Malaysia(Product):
     """Malaysian Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="MalaysiaGB", data=data)
-        self.columns = "3w,3m,7m,1y,3y,5y,7y,10y,15y,20y,30y,date"
+        columns = "3w,3m,7m,1y,3y,5y,7y,10y,15y,20y,30y,date"
+        super().__init__(product="MalaysiaGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '3 Week': idx[1][0], '3 Month': idx[1][1], '7 Month': idx[1][2],
                 '1 Year': idx[1][3], '3 Year': idx[1][4], '5 Year': idx[1][5],
@@ -953,26 +1465,42 @@ class Malaysia(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[33]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[33]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[33]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[33]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[33]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[33]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[33]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[33]/tbody/tr[8]/td[3]",
+                f"{self.x_path_base}table[33]/tbody/tr[9]/td[3]",
+                f"{self.x_path_base}table[33]/tbody/tr[10]/td[3]",
+                f"{self.x_path_base}table[33]/tbody/tr[11]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS MalaysiaGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     3w varchar(7), 3m varchar(7), 7m varchar(7),
                     1y varchar(7), 3y varchar(7), 5y varchar(7),
                     7y varchar(7), 10y varchar(7), 15y varchar(7),
                     20y varchar(7), 30y varchar(7), date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Malta(Product):
     """Malta Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="MaltaGB", data=data)
-        self.columns = "1m,3m,6m,1y,3y,5y,10y,20y,25y,date"
+        columns = "1m,3m,6m,1y,3y,5y,10y,20y,25y,date"
+        super().__init__(product="MaltaGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '1 Month': idx[1][0], '3 Month': idx[1][1], '6 Month': idx[1][2],
                 '1 Year': idx[1][3], '3 Year': idx[1][4], '5 Year': idx[1][5],
@@ -980,26 +1508,40 @@ class Malta(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[34]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[34]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[34]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[34]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[34]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[34]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[34]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[34]/tbody/tr[8]/td[3]",
+                f"{self.x_path_base}table[34]/tbody/tr[9]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS MaltaGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     1m varchar(7), 3m varchar(7), 6m varchar(7),
                     1y varchar(7), 3y varchar(7), 5y varchar(7),
                     10y varchar(7), 20y varchar(7), 25y varchar(7),
                     date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Mauritius(Product):
     """Mauritius Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="MauritiusGB", data=data)
-        self.columns = "2m,4m,6m,8m,1y,2y,3y,4y,5y,10y,15y,20y,date"
+        columns = "2m,4m,6m,8m,1y,2y,3y,4y,5y,10y,15y,20y,date"
+        super().__init__(product="MauritiusGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '2 Month': idx[1][0], '4 Month': idx[1][1], '6 Month': idx[1][2],
                 '8 Month': idx[1][3], '1 Year': idx[1][4], '2 Year': idx[1][5],
@@ -1008,27 +1550,44 @@ class Mauritius(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[35]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[35]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[35]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[35]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[35]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[35]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[35]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[35]/tbody/tr[8]/td[3]",
+                f"{self.x_path_base}table[35]/tbody/tr[9]/td[3]",
+                f"{self.x_path_base}table[35]/tbody/tr[10]/td[3]",
+                f"{self.x_path_base}table[35]/tbody/tr[11]/td[3]",
+                f"{self.x_path_base}table[35]/tbody/tr[12]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS MauritiusGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     2m varchar(7), 4m varchar(7), 6m varchar(7),
                     8m varchar(7), 1y varchar(7), 2y varchar(7),
                     3y varchar(7), 4y varchar(7), 5y varchar(7),
                     10y varchar(7), 15y varchar(7), 20y varchar(7),
                     date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Mexico(Product):
     """Mexican Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="MexicoGB", data=data)
-        self.columns = "1m,3m,6m,9m,1y,3y,5y,7y,10y,15y,20y,30y,date"
+        columns = "1m,3m,6m,9m,1y,3y,5y,7y,10y,15y,20y,30y,date"
+        super().__init__(product="MexicoGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '1 Month': idx[1][0], '3 Month': idx[1][1], '6 Month': idx[1][2],
                 '9 Month': idx[1][3], '1 Year': idx[1][4], '3 Year': idx[1][5],
@@ -1037,52 +1596,80 @@ class Mexico(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[36]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[36]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[36]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[36]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[36]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[36]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[36]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[36]/tbody/tr[8]/td[3]",
+                f"{self.x_path_base}table[36]/tbody/tr[9]/td[3]",
+                f"{self.x_path_base}table[36]/tbody/tr[10]/td[3]",
+                f"{self.x_path_base}table[36]/tbody/tr[11]/td[3]",
+                f"{self.x_path_base}table[36]/tbody/tr[12]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS MexicoGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     1m varchar(7), 3m varchar(7), 6m varchar(7),
                     9m varchar(7), 1y varchar(7), 3y varchar(7),
                     5y varchar(7), 7y varchar(7), 10y varchar(7),
                     15y varchar(7), 20y varchar(7), 30y varchar(7),
                     date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Morocco(Product):
     """Moroccan Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="MoroccoGB", data=data)
-        self.columns = "3m,6m,2y,5y,10y,15y,date"
+        columns = "3m,6m,2y,5y,10y,15y,date"
+        super().__init__(product="MoroccoGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '3 Month': idx[1][0], '6 Month': idx[1][1], '2 Year': idx[1][2],
                 '5 Year': idx[1][3], '10 Year': idx[1][4], '15 Year': idx[1][5],
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[37]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[37]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[37]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[37]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[37]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[37]/tbody/tr[6]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS MoroccoGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     3m varchar(7), 6m varchar(7), 2y varchar(7),
                     5y varchar(7), 10y varchar(7), 15y varchar(7),
                     date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Namibia(Product):
     """Namibia Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="NamibiaGB", data=data)
-        self.columns = "3m,6m,9m,1y,3y,7y,10y,15y,20y,date"
+        columns = "3m,6m,9m,1y,3y,7y,10y,15y,20y,date"
+        super().__init__(product="NamibiaGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '3 Month': idx[1][0], '6 Month': idx[1][1], '9 Month': idx[1][2],
                 '1 Year': idx[1][3], '3 Year': idx[1][4], '7 Year': idx[1][5],
@@ -1090,26 +1677,40 @@ class Namibia(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[38]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[38]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[38]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[38]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[38]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[38]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[38]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[38]/tbody/tr[8]/td[3]",
+                f"{self.x_path_base}table[38]/tbody/tr[9]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS NamibiaGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     3m varchar(7), 6m varchar(7), 9m varchar(7),
                     1y varchar(7), 3y varchar(7), 7y varchar(7),
                     10y varchar(7), 15y varchar(7), 20y varchar(7),
                     date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Netherlands(Product):
     """Netherlands Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="NetherlandsGB", data=data)
-        self.columns = "1m,3m,6m,2y,3y,4y,5y,6y,7y,8y,9y,10y,15y,20y,25y,30y,date"
+        columns = "1m,3m,6m,2y,3y,4y,5y,6y,7y,8y,9y,10y,15y,20y,25y,30y,date"
+        super().__init__(product="NetherlandsGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '1 Month': idx[1][0], '3 Month': idx[1][1], '6 Month': idx[1][2],
                 '2 Year': idx[1][3], '3 Year': idx[1][4], '4 Year': idx[1][5],
@@ -1120,8 +1721,28 @@ class Netherlands(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[39]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[39]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[39]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[39]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[39]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[39]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[39]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[39]/tbody/tr[8]/td[3]",
+                f"{self.x_path_base}table[39]/tbody/tr[9]/td[3]",
+                f"{self.x_path_base}table[39]/tbody/tr[10]/td[3]",
+                f"{self.x_path_base}table[39]/tbody/tr[11]/td[3]",
+                f"{self.x_path_base}table[39]/tbody/tr[12]/td[3]",
+                f"{self.x_path_base}table[39]/tbody/tr[13]/td[3]",
+                f"{self.x_path_base}table[39]/tbody/tr[14]/td[3]",
+                f"{self.x_path_base}table[39]/tbody/tr[15]/td[3]",
+                f"{self.x_path_base}table[39]/tbody/tr[16]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS NetherlandsGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     1m varchar(7), 3m varchar(7), 6m varchar(7),
                     2y varchar(7), 3y varchar(7), 4y varchar(7),
@@ -1129,19 +1750,66 @@ class Netherlands(Product):
                     8y varchar(7), 9y varchar(7), 10y varchar(7),
                     15y varchar(7), 20y varchar(7), 25y varchar(7),
                     30y varchar(7), date DATE, year YEAR)
-                """
+                 """
+        Yields_DB().create_table(query)
+
+
+class New_Zealand(Product):
+    """New Zealand Government Bonds."""
+    def __init__(self, data: list = []) -> None:
+        columns = "1m,2m,3m,4m,5m,6m,2y,5y,7y,10y,15y,20y,date"
+        super().__init__(product="NewZealandGB", data=data, columns=columns)
+
+    def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
+        for idx in enumerate(self.fetch_data(query)):
+            key = str(idx[1][-1])
+            self.output[key] = {
+                '1 Month': idx[1][0], '2 Month': idx[1][1], '3 Month': idx[1][2],
+                '4 Month': idx[1][3], '5 Month': idx[1][4], '6 Month': idx[1][5],
+                '2 Year': idx[1][6], '5 Year': idx[1][7], '7 Year': idx[1][8],
+                '10 Year': idx[1][9], '15 Year': idx[1][10], '20 Year': idx[1][11],
+            }
+        return self.output
+
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[40]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[40]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[40]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[40]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[40]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[40]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[40]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[40]/tbody/tr[8]/td[3]",
+                f"{self.x_path_base}table[40]/tbody/tr[9]/td[3]",
+                f"{self.x_path_base}table[40]/tbody/tr[10]/td[3]",
+                f"{self.x_path_base}table[40]/tbody/tr[11]/td[3]",
+                f"{self.x_path_base}table[40]/tbody/tr[12]/td[3]"]
+
+    def create_table(self) -> None:
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
+                   (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    1m varchar(7), 2m varchar(7), 3m varchar(7),
+                    4m varchar(7), 5m varchar(7), 6m varchar(7),
+                    2y varchar(7), 5y varchar(7), 7y varchar(7),
+                    10y varchar(7), 15y varchar(7), 20y varchar(7),
+                    date DATE, year YEAR)
+                 """
         Yields_DB().create_table(query)
 
 
 class Nigeria(Product):
     """Nigerian Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="NigeriaGB", data=data)
-        self.columns = "3m,6m,1y,2y,4y,7y,10y,20y,date"
+        columns = "3m,6m,1y,2y,4y,7y,10y,20y,date"
+        super().__init__(product="NigeriaGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '3 Month': idx[1][0], '6 Month': idx[1][1], '1 Year': idx[1][2],
                 '2 Year': idx[1][3], '4 Year': idx[1][4], '7 Year': idx[1][5],
@@ -1149,25 +1817,38 @@ class Nigeria(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[41]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[41]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[41]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[41]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[41]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[41]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[41]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[41]/tbody/tr[8]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS NigeriaGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     3m varchar(7), 6m varchar(7), 1y varchar(7),
                     2y varchar(7), 4y varchar(7), 7y varchar(7),
                     10y varchar(7), 20y varchar(7), date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Norway(Product):
     """Norway Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="NorwayGB", data=data)
-        self.columns = "3m,6m,9m,1y,3y,5y,10y,date"
+        columns = "3m,6m,9m,1y,3y,5y,10y,date"
+        super().__init__(product="NorwayGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '3 Month': idx[1][0], '6 Month': idx[1][1], '9 Month': idx[1][2],
                 '1 Year': idx[1][3], '3 Year': idx[1][4], '5 Year': idx[1][5],
@@ -1175,25 +1856,37 @@ class Norway(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[42]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[42]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[42]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[42]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[42]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[42]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[42]/tbody/tr[7]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS NorwayGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     3m varchar(7), 6m varchar(7), 9m varchar(7),
                     1y varchar(7), 3y varchar(7), 5y varchar(7),
                     10y varchar(7), date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Pakistan(Product):
     """Pakistani Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="PakistanGB", data=data)
-        self.columns = "3m,6m,1y,3y,5y,10y,14y,20y,date"
+        columns = "3m,6m,1y,3y,5y,10y,14y,20y,date"
+        super().__init__(product="PakistanGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '3 Month': idx[1][0], '6 Month': idx[1][1], '1 Year': idx[1][2],
                 '3 Year': idx[1][3], '5 Year': idx[1][4], '10 Year': idx[1][5],
@@ -1201,50 +1894,74 @@ class Pakistan(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[43]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[43]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[43]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[43]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[43]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[43]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[43]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[43]/tbody/tr[8]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS PakistanGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     3m varchar(7), 6m varchar(7), 1y varchar(7),
                     3y varchar(7), 5y varchar(7), 10y varchar(7),
-                    14y varchar(7), 20yvarchar(7), date DATE, year YEAR)
-                """
+                    14y varchar(7), 20y varchar(7), date DATE, year YEAR)
+                 """
         Yields_DB().create_table(query)
 
 
 class Peru(Product):
     """Peruvian Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="PeruGB", data=data)
-        self.columns = "2y,5y,10y,15y,20y,30y,date"
+        columns = "2y,5y,10y,15y,20y,30y,date"
+        super().__init__(product="PeruGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '2 Year': idx[1][0], '5 Year': idx[1][1], '10 Year': idx[1][2],
                 '15 Year': idx[1][3], '20 Year': idx[1][4], '30 Year': idx[1][5],
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[44]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[44]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[44]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[44]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[44]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[44]/tbody/tr[6]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS PeruGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     2y varchar(7), 5y varchar(7), 10y varchar(7),
                     15y varchar(7), 20y varchar(7), 30y varchar(7),
                     date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Philippines(Product):
     """Philippino Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="PhilippinesGB", data=data)
-        self.columns = "1m,3m,6m,1y,2y,3y,4y,5y,7y,10y,20y,date"
+        columns = "1m,3m,6m,1y,2y,3y,4y,5y,7y,10y,20y,date"
+        super().__init__(product="PhilippinesGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '1 Month': idx[1][0], '3 Month': idx[1][1], '6 Month': idx[1][2],
                 '1 Year': idx[1][3], '2 Year': idx[1][4], '3 Year': idx[1][5],
@@ -1253,26 +1970,42 @@ class Philippines(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[45]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[45]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[45]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[45]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[45]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[45]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[45]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[45]/tbody/tr[8]/td[3]",
+                f"{self.x_path_base}table[45]/tbody/tr[9]/td[3]",
+                f"{self.x_path_base}table[45]/tbody/tr[10]/td[3]",
+                f"{self.x_path_base}table[45]/tbody/tr[11]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS PhilippinesGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     1m varchar(7), 3m varchar(7), 6m varchar(7),
                     1y varchar(7), 2y varchar(7), 3y varchar(7),
                     4y varchar(7), 5y varchar(7), 7y varchar(7),
                     10y varchar(7), 20y varchar(7), date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Poland(Product):
     """Polish Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="PolandGB", data=data)
-        self.columns = "on,1m,2m,1y,2y,3y,4y,5y,6y,7y,9y,10y,date"
+        columns = "24h,1m,2m,1y,2y,3y,4y,5y,6y,7y,9y,10y,date"
+        super().__init__(product="PolandGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 'Overnight': idx[1][0], '1 Month': idx[1][1], '2 Month': idx[1][2],
                 '1 Year': idx[1][3], '2 Year': idx[1][4], '3 Year': idx[1][5],
@@ -1281,27 +2014,44 @@ class Poland(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[46]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[46]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[46]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[46]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[46]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[46]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[46]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[46]/tbody/tr[8]/td[3]",
+                f"{self.x_path_base}table[46]/tbody/tr[9]/td[3]",
+                f"{self.x_path_base}table[46]/tbody/tr[10]/td[3]",
+                f"{self.x_path_base}table[46]/tbody/tr[11]/td[3]",
+                f"{self.x_path_base}table[46]/tbody/tr[12]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS PolandGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                    on varchar(7), 1m varchar(7), 2m varchar(7),
+                    24h varchar(7), 1m varchar(7), 2m varchar(7),
                     1y varchar(7), 2y varchar(7), 3y varchar(7),
                     4y varchar(7), 5y varchar(7), 6y varchar(7),
                     7y varchar(7), 9y varchar(7), 10y varchar(7),
                     date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Portugal(Product):
     """Portaguese Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="PortugalGB", data=data)
-        self.columns = "3m,6m,1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,15y,20y,30y,date"
+        columns = "3m,6m,1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,15y,20y,30y,date"
+        super().__init__(product="PortugalGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '3 Month': idx[1][0], '6 Month': idx[1][1], '1 Year': idx[1][2],
                 '2 Year': idx[1][3], '3 Year': idx[1][4], '4 Year': idx[1][5],
@@ -1311,8 +2061,27 @@ class Portugal(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[47]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[47]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[47]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[47]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[47]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[47]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[47]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[47]/tbody/tr[8]/td[3]",
+                f"{self.x_path_base}table[47]/tbody/tr[9]/td[3]",
+                f"{self.x_path_base}table[47]/tbody/tr[10]/td[3]",
+                f"{self.x_path_base}table[47]/tbody/tr[11]/td[3]",
+                f"{self.x_path_base}table[47]/tbody/tr[12]/td[3]",
+                f"{self.x_path_base}table[47]/tbody/tr[13]/td[3]",
+                f"{self.x_path_base}table[47]/tbody/tr[14]/td[3]",
+                f"{self.x_path_base}table[47]/tbody/tr[15]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS PortugalGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     3m varchar(7), 6m varchar(7), 1y varchar(7),
                     2y varchar(7), 3y varchar(7), 4y varchar(7),
@@ -1320,43 +2089,54 @@ class Portugal(Product):
                     8y varchar(7), 9y varchar(7), 10y varchar(7),
                     15y varchar(7), 20y varchar(7), 30y varchar(7),
                     date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Qatar(Product):
     """Qatar Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="QatarGB", data=data)
-        self.columns = "2y,3y,5y,10y,30y,date"
+        columns = "2y,3y,5y,10y,30y,date"
+        super().__init__(product="QatarGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '2 Year': idx[1][0], '3 Year': idx[1][1], '5 Year': idx[1][2],
                 '10 Year': idx[1][3], '30 Year': idx[1][4],
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[48]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[48]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[48]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[48]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[48]/tbody/tr[5]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS QatarGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     2y varchar(7), 3y varchar(7), 5y varchar(7),
                     10y varchar(7), 30y varchar(7), date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Romania(Product):
     """Romanian Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="RomaniaGB", data=data)
-        self.columns = "6m,1y,2y,3y,4y,5y,7y,10y,date"
+        columns = "6m,1y,2y,3y,4y,5y,7y,10y,date"
+        super().__init__(product="RomaniaGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '6 Month': idx[1][0], '1 Year': idx[1][1], '2 Year': idx[1][2],
                 '3 Year': idx[1][3], '4 Year': idx[1][4], '5 Year': idx[1][5],
@@ -1364,25 +2144,38 @@ class Romania(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[49]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[49]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[49]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[49]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[49]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[49]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[49]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[49]/tbody/tr[8]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS RomaniaGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     6m varchar(7), 1y varchar(7), 2y varchar(7),
                     3y varchar(7), 4y varchar(7), 5y varchar(7),
                     7y varchar(7), 10y varchar(7), date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Russia(Product):
     """Russian Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="RussiaGB", data=data)
-        self.columns = "on,1w,2w,1m,2m,3m,6m,1y,2y,3y,5y,7y,10y,15y,20y,date"
+        columns = "24h,1w,2w,1m,2m,3m,6m,1y,2y,3y,5y,7y,10y,15y,20y,date"
+        super().__init__(product="RussiaGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 'Overnight': idx[1][0], '1 Week': idx[1][1], '2 Week': idx[1][2],
                 '1 Month': idx[1][3], '2 Month': idx[1][4], '3 Month': idx[1][5],
@@ -1392,53 +2185,84 @@ class Russia(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[50]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[50]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[50]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[50]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[50]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[50]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[50]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[50]/tbody/tr[8]/td[3]",
+                f"{self.x_path_base}table[50]/tbody/tr[9]/td[3]",
+                f"{self.x_path_base}table[50]/tbody/tr[10]/td[3]",
+                f"{self.x_path_base}table[50]/tbody/tr[11]/td[3]",
+                f"{self.x_path_base}table[50]/tbody/tr[12]/td[3]",
+                f"{self.x_path_base}table[50]/tbody/tr[13]/td[3]",
+                f"{self.x_path_base}table[50]/tbody/tr[14]/td[3]",
+                f"{self.x_path_base}table[50]/tbody/tr[15]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS RussiaGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                    on varchar(7), 1w varchar(7), 2w varchar(7),
+                    24h varchar(7), 1w varchar(7), 2w varchar(7),
                     1m varchar(7), 2m varchar(7), 3m varchar(7),
                     6m varchar(7), 1y varchar(7), 2y varchar(7),
                     3y varchar(7), 5y varchar(7), 7y varchar(7),
                     10y varchar(7), 15y varchar(7), 20y varchar(7),
                     date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Serbia(Product):
     """Serbian Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="SerbiaGB", data=data)
-        self.columns = "1y,2y,3y,5y,7y,10y,date"
+        columns = "1y,2y,3y,5y,7y,10y,date"
+        super().__init__(product="SerbiaGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '1 Year': idx[1][0], '2 Year': idx[1][1], '3 Year': idx[1][2],
                 '5 Year': idx[1][3], '7 Year': idx[1][4], '10 Year': idx[1][5],
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[51]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[51]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[51]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[51]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[51]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[51]/tbody/tr[6]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS SerbiaGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     1y varchar(7), 2y varchar(7), 3y varchar(7),
                     5y varchar(7), 7y varchar(7), 10y varchar(7),
                     date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Singapore(Product):
     """Singapore Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="SingaporeGB", data=data)
-        self.columns = "1m,3m,6m,1y,2y,5y,10y,15y,20y,30y,date"
+        columns = "1m,3m,6m,1y,2y,5y,10y,15y,20y,30y,date"
+        super().__init__(product="SingaporeGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '1 Month': idx[1][0], '3 Month': idx[1][1], '6 Month': idx[1][2],
                 '1 Year': idx[1][3], '2 Year': idx[1][4], '5 Year': idx[1][5],
@@ -1447,26 +2271,41 @@ class Singapore(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[52]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[52]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[52]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[52]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[52]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[52]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[52]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[52]/tbody/tr[8]/td[3]",
+                f"{self.x_path_base}table[52]/tbody/tr[9]/td[3]",
+                f"{self.x_path_base}table[52]/tbody/tr[10]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS SingaporeGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     1m varchar(7), 3m varchar(7), 6m varchar(7),
                     1y varchar(7), 2y varchar(7), 5y varchar(7),
                     10y varchar(7), 15y varchar(7), 20y varchar(7),
                     30y varchar(7), date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Slovakia(Product):
     """Slovakian Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="SlovakiaGB", data=data)
-        self.columns = "2y,5y,6y,8y,9y,10y,13y,18y,30y,50y,date"
+        columns = "2y,5y,6y,8y,9y,10y,13y,18y,30y,50y,date"
+        super().__init__(product="SlovakiaGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '2 Year': idx[1][0], '5 Year': idx[1][1], '6 Year': idx[1][2],
                 '8 Year': idx[1][3], '9 Year': idx[1][4], '10 Year': idx[1][5],
@@ -1475,26 +2314,41 @@ class Slovakia(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[53]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[53]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[53]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[53]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[53]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[53]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[53]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[53]/tbody/tr[8]/td[3]",
+                f"{self.x_path_base}table[53]/tbody/tr[9]/td[3]",
+                f"{self.x_path_base}table[53]/tbody/tr[10]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS SlovakiaGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     2y varchar(7), 5y varchar(7), 6y varchar(7),
                     8y varchar(7), 9y varchar(7), 10y varchar(7),
                     13y varchar(7), 18y varchar(7), 30y varchar(7),
                     date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Slovenia(Product):
     """Slovenian Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="SloveniaGB", data=data)
-        self.columns = "1y,2y,3y,5y,7y,8y,10y,15y,20y,25y,date"
+        columns = "1y,2y,3y,5y,7y,8y,10y,15y,20y,25y,date"
+        super().__init__(product="SloveniaGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '1 Year': idx[1][0], '2 Year': idx[1][1], '3 Year': idx[1][2],
                 '5 Year': idx[1][3], '7 Year': idx[1][4], '8 Year': idx[1][5],
@@ -1503,26 +2357,41 @@ class Slovenia(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[54]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[54]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[54]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[54]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[54]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[54]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[54]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[54]/tbody/tr[8]/td[3]",
+                f"{self.x_path_base}table[54]/tbody/tr[9]/td[3]",
+                f"{self.x_path_base}table[54]/tbody/tr[10]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS SloveniaGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     1y varchar(7), 2y varchar(7), 3y varchar(7),
                     5y varchar(7), 7y varchar(7), 8y varchar(7),
                     10y varchar(7), 15y varchar(7), 20y varchar(7),
                     25y varchar(7), date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class South_Africa(Product):
     """South African Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="SouthAfricaGB", data=data)
-        self.columns = "3m,2y,5y,10y,12y,20y,25y,30y,date"
+        columns = "3m,2y,5y,10y,12y,20y,25y,30y,date"
+        super().__init__(product="SouthAfricaGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '3 Month': idx[1][0], '2 Year': idx[1][1], '5 Year': idx[1][2],
                 '10 Year': idx[1][3], '12 Year': idx[1][4], '20 Year': idx[1][5],
@@ -1530,25 +2399,38 @@ class South_Africa(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[55]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[55]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[55]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[55]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[55]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[55]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[55]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[55]/tbody/tr[8]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS SouthAfricaGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     3m varchar(7), 2y varchar(7), 5y varchar(7),
                     10y varchar(7), 12y varchar(7), 20y varchar(7),
                     25y varchar(7), 30y varchar(7), date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class South_Korea(Product):
     """South Korean Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="SouthKoreaGB", data=data)
-        self.columns = "1y,2y,3y,4y,5y,10y,20y,30y,50y,date"
+        columns = "1y,2y,3y,4y,5y,10y,20y,30y,50y,date"
+        super().__init__(product="SouthKoreaGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '1 Year': idx[1][0], '2 Year': idx[1][1], '3 Year': idx[1][2],
                 '4 Year': idx[1][3], '5 Year': idx[1][4], '10 Year': idx[1][5],
@@ -1556,26 +2438,40 @@ class South_Korea(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[56]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[56]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[56]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[56]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[56]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[56]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[56]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[56]/tbody/tr[8]/td[3]",
+                f"{self.x_path_base}table[56]/tbody/tr[9]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS SouthKoreaGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     1y varchar(7), 2y varchar(7), 3y varchar(7),
                     4y varchar(7), 5y varchar(7), 10y varchar(7),
                     20y varchar(7), 30y varchar(7), 50y varchar(7),
                     date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Spain(Product):
     """Spanish Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="SpainGB", data=data)
-        self.columns = "1m,3m,6m,9m,1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,15y,20y,25y,30y,date"
+        columns = "1m,3m,6m,9m,1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,15y,20y,25y,30y,date"
+        super().__init__(product="SpainGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '1 Month': idx[1][0], '3 Month': idx[1][1], '6 Month': idx[1][2],
                 '9 Month': idx[1][3], '1 Year': idx[1][4], '2 Year': idx[1][5],
@@ -1586,8 +2482,30 @@ class Spain(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[57]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[57]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[57]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[57]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[57]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[57]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[57]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[57]/tbody/tr[8]/td[3]",
+                f"{self.x_path_base}table[57]/tbody/tr[9]/td[3]",
+                f"{self.x_path_base}table[57]/tbody/tr[10]/td[3]",
+                f"{self.x_path_base}table[57]/tbody/tr[11]/td[3]",
+                f"{self.x_path_base}table[57]/tbody/tr[12]/td[3]",
+                f"{self.x_path_base}table[57]/tbody/tr[13]/td[3]",
+                f"{self.x_path_base}table[57]/tbody/tr[14]/td[3]",
+                f"{self.x_path_base}table[57]/tbody/tr[15]/td[3]",
+                f"{self.x_path_base}table[57]/tbody/tr[16]/td[3]",
+                f"{self.x_path_base}table[57]/tbody/tr[17]/td[3]",
+                f"{self.x_path_base}table[57]/tbody/tr[18]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS SpainGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     1m varchar(7), 3m varchar(7), 6m varchar(7),
                     9m varchar(7), 1y varchar(7), 2y varchar(7),
@@ -1596,19 +2514,20 @@ class Spain(Product):
                     9y varchar(7), 10y varchar(7), 15y varchar(7),
                     20y varchar(7), 25y varchar(7), 30y varchar(7),
                     date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Sri_Lanka(Product):
     """Sri Lanka Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="SriLankaGB", data=data)
-        self.columns = "3m,6m,1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,15y,date"
+        columns = "3m,6m,1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,15y,date"
+        super().__init__(product="SriLankaGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '3 Month': idx[1][0], '6 Month': idx[1][1], '1 Year': idx[1][2],
                 '2 Year': idx[1][3], '3 Year': idx[1][4], '4 Year': idx[1][5],
@@ -1618,27 +2537,45 @@ class Sri_Lanka(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[58]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[58]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[58]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[58]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[58]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[58]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[58]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[58]/tbody/tr[8]/td[3]",
+                f"{self.x_path_base}table[58]/tbody/tr[9]/td[3]",
+                f"{self.x_path_base}table[58]/tbody/tr[10]/td[3]",
+                f"{self.x_path_base}table[58]/tbody/tr[11]/td[3]",
+                f"{self.x_path_base}table[58]/tbody/tr[12]/td[3]",
+                f"{self.x_path_base}table[58]/tbody/tr[13]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS SriLankaGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     3m varchar(7), 6m varchar(7), 1y varchar(7),
                     2y varchar(7), 3y varchar(7), 4y varchar(7),
                     5y varchar(7), 6y varchar(7), 7y varchar(7),
                     8y varchar(7), 9y varchar(7), 10y varchar(7),
                     15y varchar(7), date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Switzerland(Product):
     """Swiss Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="SwitzerlandGB", data=data)
-        self.columns = "on,1w,1m,2m,3m,6m,1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,15y,20y,30y,50y,date"
+        columns = "24h,1w,1m,2m,3m,6m,1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,15y,20y,30y,50y,date"
+        super().__init__(product="SwitzerlandGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 'Overnight': idx[1][0], '1 Week': idx[1][1], '1 Month': idx[1][2],
                 '2 Month': idx[1][3], '3 Month': idx[1][4], '6 Month': idx[1][5],
@@ -1650,53 +2587,88 @@ class Switzerland(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[59]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[59]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[59]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[59]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[59]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[59]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[59]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[59]/tbody/tr[8]/td[3]",
+                f"{self.x_path_base}table[59]/tbody/tr[9]/td[3]",
+                f"{self.x_path_base}table[59]/tbody/tr[10]/td[3]",
+                f"{self.x_path_base}table[59]/tbody/tr[11]/td[3]",
+                f"{self.x_path_base}table[59]/tbody/tr[12]/td[3]",
+                f"{self.x_path_base}table[59]/tbody/tr[13]/td[3]",
+                f"{self.x_path_base}table[59]/tbody/tr[14]/td[3]",
+                f"{self.x_path_base}table[59]/tbody/tr[15]/td[3]",
+                f"{self.x_path_base}table[59]/tbody/tr[16]/td[3]",
+                f"{self.x_path_base}table[59]/tbody/tr[17]/td[3]",
+                f"{self.x_path_base}table[59]/tbody/tr[18]/td[3]",
+                f"{self.x_path_base}table[59]/tbody/tr[19]/td[3]",
+                f"{self.x_path_base}table[59]/tbody/tr[20]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS SwitzerlandGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                    on varchar(7), 1w varchar(7), 1m varchar(7),
+                    24h varchar(7), 1w varchar(7), 1m varchar(7),
                     2m varchar(7), 3m varchar(7), 6m varchar(7),
                     1y varchar(7), 2y varchar(7), 3y varchar(7),
                     4y varchar(7), 5y varchar(7), 6y varchar(7),
                     7y varchar(7), 8y varchar(7), 9y varchar(7),
                     10y varchar(7), 15y varchar(7), 20y varchar(7),
                     30y varchar(7), 50y varchar(7), date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Taiwan(Product):
     """Taiwanese Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="TaiwanGB", data=data)
-        self.columns = "2y,5y,10y,20y,30y,date"
+        columns = "2y,5y,10y,20y,30y,date"
+        super().__init__(product="TaiwanGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '2 Year': idx[1][0], '5 Year': idx[1][1], '10 Year': idx[1][2],
                 '20 Year': idx[1][3], '30 Year': idx[1][4],
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[60]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[60]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[60]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[60]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[60]/tbody/tr[5]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS TaiwanGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     2y varchar(7), 5y varchar(7), 10y varchar(7),
                     20y varchar(7), 30y varchar(7), date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Thailand(Product):
     """Thai Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="ThailandGB", data=data)
-        self.columns = "1y,2y,3y,5y,7y,10y,12y,14y,15y,16y,20y,date"
+        columns = "1y,2y,3y,5y,7y,10y,12y,14y,15y,16y,20y,date"
+        super().__init__(product="ThailandGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '1 Year': idx[1][0], '2 Year': idx[1][1], '3 Year': idx[1][2],
                 '5 Year': idx[1][3], '7 Year': idx[1][4], '10 Year': idx[1][5],
@@ -1705,26 +2677,42 @@ class Thailand(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[61]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[61]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[61]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[61]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[61]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[61]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[61]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[61]/tbody/tr[8]/td[3]",
+                f"{self.x_path_base}table[61]/tbody/tr[9]/td[3]",
+                f"{self.x_path_base}table[61]/tbody/tr[10]/td[3]",
+                f"{self.x_path_base}table[61]/tbody/tr[11]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS ThailandGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     1y varchar(7), 2y varchar(7), 3y varchar(7),
                     5y varchar(7), 7y varchar(7), 10y varchar(7),
                     12y varchar(7), 14y varchar(7), 15y varchar(7),
                     16y varchar(7), 20y varchar(7), date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Turkey(Product):
     """Turkish Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="TurkeyGB", data=data)
-        self.columns = "3m,6m,9m,1y,2y,3y,5y,10y,date"
+        columns = "3m,6m,9m,1y,2y,3y,5y,10y,date"
+        super().__init__(product="TurkeyGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '3 Month': idx[1][0], '6 Month': idx[1][1], '9 Month': idx[1][2],
                 '1 Year': idx[1][3], '2 Year': idx[1][4], '3 Year': idx[1][5],
@@ -1732,25 +2720,38 @@ class Turkey(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[62]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[62]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[62]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[62]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[62]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[62]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[62]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[62]/tbody/tr[8]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS TurkeyGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     3m varchar(7), 6m varchar(7), 9m varchar(7),
                     1y varchar(7), 2y varchar(7), 3y varchar(7),
                     5y varchar(7), 10y varchar(7), date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Uganda(Product):
     """Uganda Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="UgandaGB", data=data)
-        self.columns = "3m,6m,1y,2y,3y,5y,10y,15y,date"
+        columns = "3m,6m,1y,2y,3y,5y,10y,15y,date"
+        super().__init__(product="UgandaGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '3 Month': idx[1][0], '6 Month': idx[1][1], '1 Year': idx[1][2],
                 '2 Year': idx[1][3], '3 Year': idx[1][4], '5 Year': idx[1][5],
@@ -1758,48 +2759,69 @@ class Uganda(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[63]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[63]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[63]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[63]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[63]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[63]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[63]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[63]/tbody/tr[8]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS UgandaGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     3m varchar(7), 6m varchar(7), 1y varchar(7),
                     2y varchar(7), 3y varchar(7), 5y varchar(7),
                     10y varchar(7), 15y varchar(7), date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Ukraine(Product):
     """Ukrainian Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="UkraineGB", data=data)
-        self.columns = "1y,2y,3y,date"
+        columns = "1y,2y,3y,date"
+        super().__init__(product="UkraineGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '1 Year': idx[1][0], '2 Year': idx[1][1], '3 Year': idx[1][2],
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[64]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[64]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[64]/tbody/tr[3]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS UkraineGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     1y varchar(7), 2y varchar(7), 3y varchar(7),
                     date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class United_Kingdom(Product):
     """UK Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="UnitedKingdomGB", data=data)
-        self.columns = "1m,3m,6m,1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,12y,15y,20y,25y,30y,40y,50y,date"
+        columns = "1m,3m,6m,1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,12y,15y,20y,25y,30y,40y,50y,date"
+        super().__init__(product="UnitedKingdomGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '1 Month': idx[1][0], '3 Month': idx[1][1], '6 Month': idx[1][2],
                 '1 Year': idx[1][3], '2 Year': idx[1][4], '3 Year': idx[1][5],
@@ -1811,8 +2833,32 @@ class United_Kingdom(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[65]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[65]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[65]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[65]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[65]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[65]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[65]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[65]/tbody/tr[8]/td[3]",
+                f"{self.x_path_base}table[65]/tbody/tr[9]/td[3]",
+                f"{self.x_path_base}table[65]/tbody/tr[10]/td[3]",
+                f"{self.x_path_base}table[65]/tbody/tr[11]/td[3]",
+                f"{self.x_path_base}table[65]/tbody/tr[12]/td[3]",
+                f"{self.x_path_base}table[65]/tbody/tr[13]/td[3]",
+                f"{self.x_path_base}table[65]/tbody/tr[14]/td[3]",
+                f"{self.x_path_base}table[65]/tbody/tr[15]/td[3]",
+                f"{self.x_path_base}table[65]/tbody/tr[16]/td[3]",
+                f"{self.x_path_base}table[65]/tbody/tr[17]/td[3]",
+                f"{self.x_path_base}table[65]/tbody/tr[18]/td[3]",
+                f"{self.x_path_base}table[65]/tbody/tr[19]/td[3]",
+                f"{self.x_path_base}table[65]/tbody/tr[20]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS UnitedKingdomGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     1m varchar(7), 3m varchar(7), 6m varchar(7),
                     1y varchar(7), 2y varchar(7), 3y varchar(7),
@@ -1821,47 +2867,64 @@ class United_Kingdom(Product):
                     10y varchar(7), 12y varchar(7), 15y varchar(7),
                     20y varchar(7), 25y varchar(7), 30y varchar(7),
                     40y varchar(7), 50y varchar(7), date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class United_States(Product):
     """US Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="UnitedStatesGB", data=data)
-        self.columns = "1m,3m,6m,1y,2y,3y,5y,7y,10y,20y,30y,date"
+        columns = "1m,3m,6m,1y,2y,3y,5y,7y,10y,20y,30y,date"
+        super().__init__(product="UnitedStatesGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '1 Month': idx[1][0], '3 Month': idx[1][1], '6 Month': idx[1][2],
                 '1 Year': idx[1][3], '2 Year': idx[1][4], '3 Year': idx[1][5],
                 '5 Year': idx[1][6], '7 Year': idx[1][7], '10 Year': idx[1][8],
-                '20 Year': idx[1][9], '30 Year': idx[1][11],
+                '20 Year': idx[1][9], '30 Year': idx[1][10],
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[66]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[66]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[66]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[66]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[66]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[66]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[66]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[66]/tbody/tr[8]/td[3]",
+                f"{self.x_path_base}table[66]/tbody/tr[9]/td[3]",
+                f"{self.x_path_base}table[66]/tbody/tr[10]/td[3]",
+                f"{self.x_path_base}table[66]/tbody/tr[11]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS UnitedStatesGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     1m varchar(7), 3m varchar(7), 6m varchar(7),
                     1y varchar(7), 2y varchar(7), 3y varchar(7),
                     5y varchar(7), 7y varchar(7), 10y varchar(7),
                     20y varchar(7), 30y varchar(7), date DATE, year YEAR)
-                """
+                 """
         Yields_DB().create_table(query)
 
 
 class Vietnam(Product):
     """Vietnamese Government Bonds."""
     def __init__(self, data: list = []) -> None:
-        super().__init__(product="VietnamGB", data=data)
-        self.columns = "1m,3m,6m,1y,2y,3y,5y,7y,10y,20y,30y,date"
+        columns = "1y,2y,3y,5y,7y,10y,15y,20y,25y,date"
+        super().__init__(product="VietnamGB", data=data, columns=columns)
 
     def to_dict(self, query: list = []) -> dict:
+        """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
-            key = str(idx[1][-2])
+            key = str(idx[1][-1])
             self.output[key] = {
                 '1 Year': idx[1][0], '2 Year': idx[1][1], '3 Year': idx[1][2],
                 '5 Year': idx[1][3], '7 Year': idx[1][4], '10 Year': idx[1][5],
@@ -1869,11 +2932,25 @@ class Vietnam(Product):
             }
         return self.output
 
+    def x_paths(self) -> list[str]:
+        """Output paths to collect data."""
+        return [f"{self.x_path_base}table[67]/tbody/tr[1]/td[3]",
+                f"{self.x_path_base}table[67]/tbody/tr[2]/td[3]",
+                f"{self.x_path_base}table[67]/tbody/tr[3]/td[3]",
+                f"{self.x_path_base}table[67]/tbody/tr[4]/td[3]",
+                f"{self.x_path_base}table[67]/tbody/tr[5]/td[3]",
+                f"{self.x_path_base}table[67]/tbody/tr[6]/td[3]",
+                f"{self.x_path_base}table[67]/tbody/tr[7]/td[3]",
+                f"{self.x_path_base}table[67]/tbody/tr[8]/td[3]",
+                f"{self.x_path_base}table[67]/tbody/tr[9]/td[3]"]
+
     def create_table(self) -> None:
-        query = """CREATE TABLE IF NOT EXISTS VietnamGB
+        """Create table in database if not already exits."""
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     1y varchar(7), 2y varchar(7), 3y varchar(7),
                     5y varchar(7), 7y varchar(7), 10y varchar(7),
-                    20y varchar(7), 25y varchar(7), date DATE, year YEAR)
-                """
+                    15y varchar(7), 20y varchar(7), 25y varchar(7),
+                    date DATE, year YEAR)
+                 """
         Yields_DB().create_table(query)
