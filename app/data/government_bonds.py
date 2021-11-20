@@ -50,7 +50,6 @@ hashmap = {
     "Kazakhstan": Kazakhstan,
     "Kenya": Kenya,
     "Malaysia": Malaysia,
-    "Malaysia": Malaysia,
     "Malta": Malta,
     "Mauritius": Mauritius,
     "Mexico": Mexico,
