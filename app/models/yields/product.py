@@ -3,18 +3,17 @@ from app.models.yields.database import Yields_DB
 
 class Product():
     """Basic representation of a product"""
-    def __init__(self, product: str, data: list = [], columns: str = "") -> None:
+    def __init__(self, product: str, columns: str = "") -> None:
         self.output: dict = {}
         self.product = product
-        self.data = data
         self.columns = columns
         self.vals_ph = f'({(str("%s," * len(columns.split(",")))[:-1])})'
         self.x_path_base = "/html/body/div[5]/section/"
         self.collection_query = f"INSERT INTO {product} ({columns}) VALUES {self.vals_ph}"
 
-    def fetch_data(self, query: list) -> tuple:
+    def fetch_data(self, query: list, data: list = []) -> tuple:
         """Get data from DB"""
-        return Yields_DB().fetch(query, self.data)
+        return Yields_DB().fetch(query, data)
 
     def add_to_db_query(self) -> str:
         """Output query to add collected data to db."""
@@ -39,14 +38,15 @@ class Product():
 
     def __delete_entry__(self, date: str) -> None:
         """Delete entry from table by date."""
-        return Yields_DB().execute(f"DELETE FROM {self.product} WHERE date='{date}'")
+        query = f"DELETE FROM {self.product} WHERE date='{date}'"
+        return Yields_DB().execute(query)
 
 
 class Argentina(Product):
     """Argentina Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "1y,4y,7y,date"
-        super().__init__(product="ArgentinaGB", data=data, columns=columns)
+        super().__init__(product="ArgentinaGB", columns=columns)
 
     def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
@@ -76,11 +76,11 @@ class Argentina(Product):
 
 class Australia(Product):
     """Australia Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,12y,15y,20y,30y,date"
-        super().__init__(product="AustraliaGB", data=data, columns=columns)
+        super().__init__(product="AustraliaGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -125,11 +125,11 @@ class Australia(Product):
 
 class Austria(Product):
     """Austria Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,15y,20y,25y,30y,40y,date"
-        super().__init__(product="AustriaGB", data=data, columns=columns)
+        super().__init__(product="AustriaGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -176,11 +176,11 @@ class Austria(Product):
 
 class Bahrain(Product):
     """Bahrain Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "3m,6m,9m,1y,2y,5y,date"
-        super().__init__(product="BahrainGB", data=data, columns=columns)
+        super().__init__(product="BahrainGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -211,11 +211,11 @@ class Bahrain(Product):
 
 
 class Bangledesh(Product):
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "3m,6m,1y,2y,5y,10y,15y,20y,date"
-        super().__init__(product="BangledeshGB", data=data, columns=columns)
+        super().__init__(product="BangledeshGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -251,11 +251,11 @@ class Bangledesh(Product):
 
 class Belgium(Product):
     """Belgium Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "1m,3m,6m,9m,1y,2y,3y,4y,5y,6y,8y,9y,10y,15y,20y,date"
-        super().__init__(product="BelgiumGB", data=data, columns=columns)
+        super().__init__(product="BelgiumGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -302,11 +302,11 @@ class Belgium(Product):
 
 class Botswana(Product):
     """Botswana Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "6m,3y,5y,20y,date"
-        super().__init__(product="BotswanaGB", data=data, columns=columns)
+        super().__init__(product="BotswanaGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -335,11 +335,11 @@ class Botswana(Product):
 
 class Brazil(Product):
     """Brazil Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "3m,6m,9m,1y,2y,3y,5y,8y,10y,date"
-        super().__init__(product="BrazilGB", data=data, columns=columns)
+        super().__init__(product="BrazilGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -376,11 +376,11 @@ class Brazil(Product):
 
 class Bulgaria(Product):
     """Bulgaria Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "1m,1y,2y,3y,4y,5y,7y,10y,date"
-        super().__init__(product="BulgariaGB", data=data, columns=columns)
+        super().__init__(product="BulgariaGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -416,11 +416,11 @@ class Bulgaria(Product):
 
 class Canada(Product):
     """Canadian Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "1m,2m,3m,6m,1y,2y,3y,4y,5y,7y,10y,20y,30y,date"
-        super().__init__(product="CanadaGB", data=data, columns=columns)
+        super().__init__(product="CanadaGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -464,11 +464,11 @@ class Canada(Product):
 
 class Chile(Product):
     """Chilian Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "1y,2y,3y,4y,5y,8y,10y,date"
-        super().__init__(product="ChileGB", data=data, columns=columns)
+        super().__init__(product="ChileGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -502,11 +502,11 @@ class Chile(Product):
 
 class China(Product):
     """Chinese Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "1y,2y,3y,5y,7y,10y,15y,20y,30y,date"
-        super().__init__(product="ChinaGB", data=data, columns=columns)
+        super().__init__(product="ChinaGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -543,11 +543,11 @@ class China(Product):
 
 class Colombia(Product):
     """Colombian Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "1y,4y,5y,10y,15y,date"
-        super().__init__(product="ColombiaGB", data=data, columns=columns)
+        super().__init__(product="ColombiaGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -578,11 +578,11 @@ class Colombia(Product):
 
 class Crotia(Product):
     """Croatian Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "1y,3y,5y,10y,date"
-        super().__init__(product="CroatiaGB", data=data, columns=columns)
+        super().__init__(product="CroatiaGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -611,11 +611,11 @@ class Crotia(Product):
 
 class Cyprus(Product):
     """Cyprus Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "1y,3y,5y,7y,10y,date"
-        super().__init__(product="CyprusGB", data=data, columns=columns)
+        super().__init__(product="CyprusGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -646,11 +646,11 @@ class Cyprus(Product):
 
 class Czech_Republic(Product):
     """Czech Republic Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,15y,20y,50y,date"
-        super().__init__(product="CzechRepublicGB", data=data, columns=columns)
+        super().__init__(product="CzechRepublicGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -694,11 +694,11 @@ class Czech_Republic(Product):
 
 class Egypt(Product):
     """Egyptian Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "24h,3m,6m,9m,1y,2y,3y,5y,7y,10y,date"
-        super().__init__(product="EgyptGB", data=data, columns=columns)
+        super().__init__(product="EgyptGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -737,11 +737,11 @@ class Egypt(Product):
 
 class France(Product):
     """French Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "1m,3m,6m,9m,1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,15y,20y,25y,30y,50y,date"
-        super().__init__(product="FranceGB", data=data, columns=columns)
+        super().__init__(product="FranceGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -795,11 +795,11 @@ class France(Product):
 
 class Germany(Product):
     """German Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "3m,6m,9m,1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,15y,20y,25y,30y,date"
-        super().__init__(product="GermanyGB", data=data, columns=columns)
+        super().__init__(product="GermanyGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -849,11 +849,11 @@ class Germany(Product):
 
 class Greece(Product):
     """Greek Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "1m,3m,6m,5y,10y,15y,20y,25y,date"
-        super().__init__(product="GreeceGB", data=data, columns=columns)
+        super().__init__(product="GreeceGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -888,11 +888,11 @@ class Greece(Product):
 
 class Hong_Kong(Product):
     """Hong Kong Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "1w,1m,3m,6m,9m,1y,2y,3y,5y,7y,10y,15y,date"
-        super().__init__(product="HongKongGB", data=data, columns=columns)
+        super().__init__(product="HongKongGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -934,11 +934,11 @@ class Hong_Kong(Product):
 
 class Hungary(Product):
     """Hungarian Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "3m,6m,1y,3y,5y,10y,15y,date"
-        super().__init__(product="HungaryGB", data=data, columns=columns)
+        super().__init__(product="HungaryGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -972,11 +972,11 @@ class Hungary(Product):
 
 class Iceland(Product):
     """Iceland Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "2y,5y,10y,date"
-        super().__init__(product="IcelandGB", data=data, columns=columns)
+        super().__init__(product="IcelandGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -1003,11 +1003,11 @@ class Iceland(Product):
 
 class India(Product):
     """India Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = columns = "3m,6m,1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,11y,12y,13y,14y,15y,19y,24y,30y,date"
-        super().__init__(product="IndiaGB", data=data, columns=columns)
+        super().__init__(product="IndiaGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -1062,11 +1062,11 @@ class India(Product):
 
 class Indonesia(Product):
     """Indonesian Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "1m,3m,6m,1y,3y,5y,10y,15y,20y,25y,30y,date"
-        super().__init__(product="IndonesiaGB", data=data, columns=columns)
+        super().__init__(product="IndonesiaGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -1106,11 +1106,11 @@ class Indonesia(Product):
 
 class Ireland(Product):
     """Ireland Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "3m,6m,1y,3y,4y,5y,6y,7y,8y,10y,15y,20y,30y,date"
-        super().__init__(product="IrelandGB", data=data, columns=columns)
+        super().__init__(product="IrelandGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -1154,12 +1154,12 @@ class Ireland(Product):
 
 class Israel(Product):
     """Israeli Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         table = "IsraelGB"
         columns = "1m,3m,6m,9m,1y,2y,3y,5y,10y,30y,date"
-        super().__init__(product=table, data=data, columns=columns)
+        super().__init__(product=table, columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -1198,12 +1198,12 @@ class Israel(Product):
 
 class Italy(Product):
     """Italian Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         table = "ItalyGB"
         columns = "1m,3m,6m,9m,1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,15y,20y,30y,50y,date"
-        super().__init__(product=table, data=data, columns=columns)
+        super().__init__(product=table, columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -1255,11 +1255,11 @@ class Italy(Product):
 
 class Japan(Product):
     """Japanese Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "1m,3m,6m,9m,1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,15y,20y,30y,40y,date"
-        super().__init__(product="JapanGB", data=data, columns=columns)
+        super().__init__(product="JapanGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -1311,11 +1311,11 @@ class Japan(Product):
 
 class Jordan(Product):
     """Jordan Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "3m,6m,1y,2y,3y,5y,7y,10y,date"
-        super().__init__(product="JordanGB", data=data, columns=columns)
+        super().__init__(product="JordanGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -1350,11 +1350,11 @@ class Jordan(Product):
 
 class Kazakhstan(Product):
     """Kazakhstan Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,15y,25y,date"
-        super().__init__(product="KazakhstanGB", data=data, columns=columns)
+        super().__init__(product="KazakhstanGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -1396,11 +1396,11 @@ class Kazakhstan(Product):
 
 class Kenya(Product):
     """Kenya Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "24h,3m,6m,1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,15y,20y,25y,date"
-        super().__init__(product="KenyaGB", data=data, columns=columns)
+        super().__init__(product="KenyaGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -1449,11 +1449,11 @@ class Kenya(Product):
 
 class Malaysia(Product):
     """Malaysian Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "3w,3m,7m,1y,3y,5y,7y,10y,15y,20y,30y,date"
-        super().__init__(product="MalaysiaGB", data=data, columns=columns)
+        super().__init__(product="MalaysiaGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -1493,11 +1493,11 @@ class Malaysia(Product):
 
 class Malta(Product):
     """Malta Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "1m,3m,6m,1y,3y,5y,10y,20y,25y,date"
-        super().__init__(product="MaltaGB", data=data, columns=columns)
+        super().__init__(product="MaltaGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -1534,11 +1534,11 @@ class Malta(Product):
 
 class Mauritius(Product):
     """Mauritius Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "2m,4m,6m,8m,1y,2y,3y,4y,5y,10y,15y,20y,date"
-        super().__init__(product="MauritiusGB", data=data, columns=columns)
+        super().__init__(product="MauritiusGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -1580,11 +1580,11 @@ class Mauritius(Product):
 
 class Mexico(Product):
     """Mexican Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "1m,3m,6m,9m,1y,3y,5y,7y,10y,15y,20y,30y,date"
-        super().__init__(product="MexicoGB", data=data, columns=columns)
+        super().__init__(product="MexicoGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -1626,11 +1626,11 @@ class Mexico(Product):
 
 class Morocco(Product):
     """Moroccan Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "3m,6m,2y,5y,10y,15y,date"
-        super().__init__(product="MoroccoGB", data=data, columns=columns)
+        super().__init__(product="MoroccoGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -1662,11 +1662,11 @@ class Morocco(Product):
 
 class Namibia(Product):
     """Namibia Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "3m,6m,9m,1y,3y,7y,10y,15y,20y,date"
-        super().__init__(product="NamibiaGB", data=data, columns=columns)
+        super().__init__(product="NamibiaGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -1703,11 +1703,11 @@ class Namibia(Product):
 
 class Netherlands(Product):
     """Netherlands Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "1m,3m,6m,2y,3y,4y,5y,6y,7y,8y,9y,10y,15y,20y,25y,30y,date"
-        super().__init__(product="NetherlandsGB", data=data, columns=columns)
+        super().__init__(product="NetherlandsGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -1756,11 +1756,11 @@ class Netherlands(Product):
 
 class New_Zealand(Product):
     """New Zealand Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "1m,2m,3m,4m,5m,6m,2y,5y,7y,10y,15y,20y,date"
-        super().__init__(product="NewZealandGB", data=data, columns=columns)
+        super().__init__(product="NewZealandGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -1802,11 +1802,11 @@ class New_Zealand(Product):
 
 class Nigeria(Product):
     """Nigerian Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "3m,6m,1y,2y,4y,7y,10y,20y,date"
-        super().__init__(product="NigeriaGB", data=data, columns=columns)
+        super().__init__(product="NigeriaGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -1841,11 +1841,11 @@ class Nigeria(Product):
 
 class Norway(Product):
     """Norway Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "3m,6m,9m,1y,3y,5y,10y,date"
-        super().__init__(product="NorwayGB", data=data, columns=columns)
+        super().__init__(product="NorwayGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -1879,11 +1879,11 @@ class Norway(Product):
 
 class Pakistan(Product):
     """Pakistani Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "3m,6m,1y,3y,5y,10y,14y,20y,date"
-        super().__init__(product="PakistanGB", data=data, columns=columns)
+        super().__init__(product="PakistanGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -1918,11 +1918,11 @@ class Pakistan(Product):
 
 class Peru(Product):
     """Peruvian Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "2y,5y,10y,15y,20y,30y,date"
-        super().__init__(product="PeruGB", data=data, columns=columns)
+        super().__init__(product="PeruGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -1954,11 +1954,11 @@ class Peru(Product):
 
 class Philippines(Product):
     """Philippino Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "1m,3m,6m,1y,2y,3y,4y,5y,7y,10y,20y,date"
-        super().__init__(product="PhilippinesGB", data=data, columns=columns)
+        super().__init__(product="PhilippinesGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -1998,11 +1998,11 @@ class Philippines(Product):
 
 class Poland(Product):
     """Polish Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "24h,1m,2m,1y,2y,3y,4y,5y,6y,7y,9y,10y,date"
-        super().__init__(product="PolandGB", data=data, columns=columns)
+        super().__init__(product="PolandGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -2044,11 +2044,11 @@ class Poland(Product):
 
 class Portugal(Product):
     """Portaguese Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "3m,6m,1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,15y,20y,30y,date"
-        super().__init__(product="PortugalGB", data=data, columns=columns)
+        super().__init__(product="PortugalGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -2095,11 +2095,11 @@ class Portugal(Product):
 
 class Qatar(Product):
     """Qatar Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "2y,3y,5y,10y,30y,date"
-        super().__init__(product="QatarGB", data=data, columns=columns)
+        super().__init__(product="QatarGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -2129,11 +2129,11 @@ class Qatar(Product):
 
 class Romania(Product):
     """Romanian Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "6m,1y,2y,3y,4y,5y,7y,10y,date"
-        super().__init__(product="RomaniaGB", data=data, columns=columns)
+        super().__init__(product="RomaniaGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -2168,11 +2168,11 @@ class Romania(Product):
 
 class Russia(Product):
     """Russian Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "24h,1w,2w,1m,2m,3m,6m,1y,2y,3y,5y,7y,10y,15y,20y,date"
-        super().__init__(product="RussiaGB", data=data, columns=columns)
+        super().__init__(product="RussiaGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -2219,11 +2219,11 @@ class Russia(Product):
 
 class Serbia(Product):
     """Serbian Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "1y,2y,3y,5y,7y,10y,date"
-        super().__init__(product="SerbiaGB", data=data, columns=columns)
+        super().__init__(product="SerbiaGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -2255,11 +2255,11 @@ class Serbia(Product):
 
 class Singapore(Product):
     """Singapore Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "1m,3m,6m,1y,2y,5y,10y,15y,20y,30y,date"
-        super().__init__(product="SingaporeGB", data=data, columns=columns)
+        super().__init__(product="SingaporeGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -2298,11 +2298,11 @@ class Singapore(Product):
 
 class Slovakia(Product):
     """Slovakian Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "2y,5y,6y,8y,9y,10y,13y,18y,30y,50y,date"
-        super().__init__(product="SlovakiaGB", data=data, columns=columns)
+        super().__init__(product="SlovakiaGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -2341,11 +2341,11 @@ class Slovakia(Product):
 
 class Slovenia(Product):
     """Slovenian Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "1y,2y,3y,5y,7y,8y,10y,15y,20y,25y,date"
-        super().__init__(product="SloveniaGB", data=data, columns=columns)
+        super().__init__(product="SloveniaGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -2384,11 +2384,11 @@ class Slovenia(Product):
 
 class South_Africa(Product):
     """South African Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "3m,2y,5y,10y,12y,20y,25y,30y,date"
-        super().__init__(product="SouthAfricaGB", data=data, columns=columns)
+        super().__init__(product="SouthAfricaGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -2423,11 +2423,11 @@ class South_Africa(Product):
 
 class South_Korea(Product):
     """South Korean Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "1y,2y,3y,4y,5y,10y,20y,30y,50y,date"
-        super().__init__(product="SouthKoreaGB", data=data, columns=columns)
+        super().__init__(product="SouthKoreaGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -2464,11 +2464,11 @@ class South_Korea(Product):
 
 class Spain(Product):
     """Spanish Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "1m,3m,6m,9m,1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,15y,20y,25y,30y,date"
-        super().__init__(product="SpainGB", data=data, columns=columns)
+        super().__init__(product="SpainGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -2520,11 +2520,11 @@ class Spain(Product):
 
 class Sri_Lanka(Product):
     """Sri Lanka Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "3m,6m,1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,15y,date"
-        super().__init__(product="SriLankaGB", data=data, columns=columns)
+        super().__init__(product="SriLankaGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -2568,11 +2568,11 @@ class Sri_Lanka(Product):
 
 class Switzerland(Product):
     """Swiss Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "24h,1w,1m,2m,3m,6m,1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,15y,20y,30y,50y,date"
-        super().__init__(product="SwitzerlandGB", data=data, columns=columns)
+        super().__init__(product="SwitzerlandGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -2627,11 +2627,11 @@ class Switzerland(Product):
 
 class Taiwan(Product):
     """Taiwanese Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "2y,5y,10y,20y,30y,date"
-        super().__init__(product="TaiwanGB", data=data, columns=columns)
+        super().__init__(product="TaiwanGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -2661,11 +2661,11 @@ class Taiwan(Product):
 
 class Thailand(Product):
     """Thai Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "1y,2y,3y,5y,7y,10y,12y,14y,15y,16y,20y,date"
-        super().__init__(product="ThailandGB", data=data, columns=columns)
+        super().__init__(product="ThailandGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -2705,11 +2705,11 @@ class Thailand(Product):
 
 class Turkey(Product):
     """Turkish Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "3m,6m,9m,1y,2y,3y,5y,10y,date"
-        super().__init__(product="TurkeyGB", data=data, columns=columns)
+        super().__init__(product="TurkeyGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -2744,11 +2744,11 @@ class Turkey(Product):
 
 class Uganda(Product):
     """Uganda Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "3m,6m,1y,2y,3y,5y,10y,15y,date"
-        super().__init__(product="UgandaGB", data=data, columns=columns)
+        super().__init__(product="UgandaGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -2783,11 +2783,11 @@ class Uganda(Product):
 
 class Ukraine(Product):
     """Ukrainian Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "1y,2y,3y,date"
-        super().__init__(product="UkraineGB", data=data, columns=columns)
+        super().__init__(product="UkraineGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -2814,11 +2814,11 @@ class Ukraine(Product):
 
 class United_Kingdom(Product):
     """UK Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "1m,3m,6m,1y,2y,3y,4y,5y,6y,7y,8y,9y,10y,12y,15y,20y,25y,30y,40y,50y,date"
-        super().__init__(product="UnitedKingdomGB", data=data, columns=columns)
+        super().__init__(product="UnitedKingdomGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -2873,11 +2873,11 @@ class United_Kingdom(Product):
 
 class United_States(Product):
     """US Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "1m,3m,6m,1y,2y,3y,5y,7y,10y,20y,30y,date"
-        super().__init__(product="UnitedStatesGB", data=data, columns=columns)
+        super().__init__(product="UnitedStatesGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
@@ -2917,11 +2917,11 @@ class United_States(Product):
 
 class Vietnam(Product):
     """Vietnamese Government Bonds."""
-    def __init__(self, data: list = []) -> None:
+    def __init__(self) -> None:
         columns = "1y,2y,3y,5y,7y,10y,15y,20y,25y,date"
-        super().__init__(product="VietnamGB", data=data, columns=columns)
+        super().__init__(product="VietnamGB", columns=columns)
 
-    def to_dict(self, query: list = []) -> dict:
+    def to_dict(self, query: list) -> dict:
         """Convert and output data to hashmap."""
         for idx in enumerate(self.fetch_data(query)):
             key = str(idx[1][-1])
