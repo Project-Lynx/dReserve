@@ -5,19 +5,18 @@ from app.util.convert_product import get_class
 
 class No_Dates:
     """Strategy Interface for when no dates are passed."""
-    def execute(self, product: str, duration: str = "") -> None:
+    def execute(self, product: str, duration: str = "") -> dict:
         """Execute no dates strategy."""
         product_class = get_class(product)
-        product_data = product_class().export_info()
-        table = product_data['table']
-        columns = product_data['columns']
+        table = product_class().__internals__()['product']
+        columns = product_class().__internals__()['columns']
 
         if duration:
             query = [f"SELECT date,{duration} FROM {table}", False]
-            product_class().rate_to_dict(query)
+            return product_class().rate_to_dict(query)
         else:
             query = [f"SELECT {columns} FROM {table}", False]
-            product_class().to_dict(query)
+            return product_class().to_dict(query)
 
 
 class Dates_Strategy:
@@ -30,12 +29,11 @@ class Dates_Strategy:
         self.previous_query_end = "ORDER BY id DESC LIMIT 1, 1"
         self.product_class = get_class(product)
 
-        internals = self.product_class().export_info()
-
+        internals = self.product_class().__internals__()
         if duration:
-            self.query_base = f"SELECT date,{duration} FROM {internals['table']} "
+            self.query_base = f"SELECT date,{duration} FROM {internals['product']} "
         else:
-            self.query_base = f"SELECT {internals['columns']} FROM {internals['table']} "
+            self.query_base = f"SELECT {internals['columns']} FROM {internals['product']} "
 
     def get_internals(self) -> dict:
         """Export internal variables."""
