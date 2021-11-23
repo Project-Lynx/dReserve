@@ -1,31 +1,30 @@
 def convert_shorthand_month(month: str) -> str:
+    """
+    Convert string of shorthand
+    month to sting of mm form.
+
+    input: 'Jan' or 'jan'
+    output: 01
+    """
     if not isinstance(month, str):
-        raise TypeError(f"{month} Not Valid! Should be a string like 'Jan' or 'Dec' ")
+        raise TypeError(f"{type(month)} not valid type! Must be string.")
 
-    if month == 'Jan':
-        return '01'
-    elif month == 'Feb':
-        return '02'
-    elif month == 'Mar':
-        return '03'
-    elif month == 'Apr':
-        return '04'
-    elif month == 'May':
-        return '05'
-    elif month == 'Jun':
-        return '06'
-    elif month == 'Jul':
-        return '07'
-    elif month == 'Aug':
-        return '08'
-    elif month == 'Sep':
-        return '09'
-    elif month == 'Oct':
-        return '10'
-    elif month == 'Nov':
-        return '11'
-    elif month == 'Dec':
-        return '12'
+    hashmap = {
+        "Jan": '01', "jan": "01",
+        "Feb": '02', "feb": "02",
+        "Mar": '03', "mar": "03",
+        "Apr": '04', "apr": "04",
+        "May": '05', "may": "05",
+        "Jun": '06', "jun": "06",
+        "Jul": '07', "jul": "07",
+        "Aug": '08', "aug": "08",
+        "Sep": '09', "sep": "09",
+        "Oct": '10', "oct": "10",
+        "Nov": '11', "nov": "11",
+        "Dec": '12', "dec": "12",
+    }
+    try:
+        return hashmap[month]
 
-    else:
-        raise ValueError(f"{month} Not Valid! Examples of valid passes: 'Jan'...'Dec'")
+    except KeyError:
+        raise KeyError(f"{month} is not valid! Should be Jan-Dec or jan-dec.")

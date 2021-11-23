@@ -1,3 +1,4 @@
+"""
 import unittest
 
 from app.repositories.futures import hist, quote
@@ -57,3 +58,4 @@ class TestFuturesRepo(unittest.TestCase):
 
 if __name__ in '__main__':
     unittest.main()
+"""
