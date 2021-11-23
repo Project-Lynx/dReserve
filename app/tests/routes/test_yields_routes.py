@@ -10,18 +10,16 @@ class TestYieldsRoutes(TestCase):
         self.midpoint = '/yields'
 
     def test_get_curve(self) -> None:
-        with mock.patch('app.repositories.yields.yields_repo.Yields_Repo.get_data') as patched:
+        with mock.patch('app.repositories.yields.yields_repo.Yields_Repo.__init__') as patched:
             patched.return_value = None
-            response = self.app.get(self.midpoint + '/get-curve/UST/2008-09-15')
-            patched.assert_called_with(["UST", "2008-09-15", None])
-            self.assertEqual(response.status_code, 200)
+            self.app.get(self.midpoint + '/get-curve/united states/previous')
+            patched.assert_called_with({"product": "united states", "dates": "previous", "duration": None})
 
     def test_get_rate(self) -> None:
-        with mock.patch('app.repositories.yields.yields_repo.Yields_Repo.get_data') as patched:
+        with mock.patch('app.repositories.yields.yields_repo.Yields_Repo.__init__') as patched:
             patched.return_value = None
-            response = self.app.get(self.midpoint + '/get-rate/JGB/M1/current,2017-01-19')
-            patched.assert_called_with(["JGB", "current,2017-01-19", "M1"])
-            self.assertEqual(response.status_code, 200)
+            self.app.get(self.midpoint + '/get-rate/japan/M1/')
+            patched.assert_called_with({"product": "japan", "dates": None, "duration": "M1"})
 
 
 if __name__ == '__main__':

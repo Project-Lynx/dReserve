@@ -8,10 +8,11 @@ class Yields_DB(DB_Meta):
         """Set up database variables."""
         super().__init__('yields')
 
-    def fetch(self, query: list, dates: list = []) -> tuple:
+    def fetch(self, query: list, dates: list = None) -> tuple:
         """Method to fetch data for a given query and/or dates from database"""
         self.__connect__()
-        if True in query:
+
+        if dates:
             if len(dates) > 1:
                 self.cur.execute(query[0], (tuple(i for i in dates), ))
             else:

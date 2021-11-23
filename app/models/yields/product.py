@@ -1287,7 +1287,7 @@ class Japan(Product):
 
     def create_table(self) -> None:
         """Create table in database if not already exits."""
-        query = """CREATE TABLE IF NOT EXISTS JapanGB
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     1m varchar(7), 3m varchar(7), 6m varchar(7),
                     9m varchar(7), 1y varchar(7), 2y varchar(7),
@@ -1330,7 +1330,7 @@ class Jordan(Product):
 
     def create_table(self) -> None:
         """Create table in database if not already exits."""
-        query = """CREATE TABLE IF NOT EXISTS JordanGB
+        query = f"""CREATE TABLE IF NOT EXISTS {self.product}
                    (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
                     3m varchar(7), 6m varchar(7), 1y varchar(7),
                     2y varchar(7), 3y varchar(7), 5y varchar(7),
