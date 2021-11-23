@@ -48,7 +48,7 @@ class Dates_Strategy:
         if self.duration:
             return self.product_class().rate_to_dict(query)
         else:
-            return self.product_class(self.dates).to_dict(query)
+            return self.product_class().to_dict(query)
 
 
 class a_date(Dates_Strategy):
